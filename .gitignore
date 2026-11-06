@@ -1,0 +1,15 @@
+# Configuración con credenciales (cada entorno tiene la suya)
+config/config.local.php
+.env
+
+# Códigos QR generados
+dist/img/codigosqr/
+
+# Archivos comprimidos
+*.zip
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

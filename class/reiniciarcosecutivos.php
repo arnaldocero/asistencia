@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 include('../ajax/db_connect.php');
 
 $valores = [

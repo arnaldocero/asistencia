@@ -107,7 +107,7 @@
 
                   class="sidebar-link waves-effect waves-dark sidebar-link"
 
-                  href="cumpleaños.php"
+                  href="cumpleanos.php"
 
                   aria-expanded="false"
 
@@ -118,6 +118,18 @@
                 >
 
               </li>
+
+              <?php if (($_SESSION['usuario_rol'] ?? '') === 'admin') { ?>
+              <li class="sidebar-item">
+                <a
+                  class="sidebar-link waves-effect waves-dark sidebar-link"
+                  href="authentication-register.php"
+                  aria-expanded="false"
+                  ><i class="mdi mdi-account-plus"></i
+                  ><span class="hide-menu">Registrar usuario</span></a
+                >
+              </li>
+              <?php } ?>
 
               
 

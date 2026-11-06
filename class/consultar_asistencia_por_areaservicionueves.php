@@ -1,6 +1,7 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 date_default_timezone_set('America/Bogota');

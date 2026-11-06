@@ -540,6 +540,7 @@ include("class/verificar_sesion.php");
     <script src="dist/js/pages/chart/chart-page-init.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="dist/js/sesion.js"></script>
     <script src="dist/js/graficas.js?j=<?php echo time(); ?>"></script>
     
   </body>

@@ -685,6 +685,7 @@ include("class/verificar_sesion.php");
 
     <script src="dist/js/qz-tray.js"></script>
 
+    <script src="dist/js/sesion.js"></script>
     <script src="dist/js/miconfig.js?j=<?php echo time(); ?>"></script>
     <script>$("#origenModal").val("index");</script>
   </body>

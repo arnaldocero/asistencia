@@ -1,10 +1,12 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 header('Content-Type: application/json');
 include('../ajax/db_connect.php');
+require_once __DIR__ . '/../ajax/areas.php';
 
 // Mostrar errores (solo para desarrollo)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -18,20 +20,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Nuevo campo: diagnóstico (checkbox)
     $tiene_diagnostico = isset($_POST['diagnostico']) ? 1 : 0;
 
-    // Calcular área según edad
-    $fecha_nacimiento_dt = new DateTime($fecha_nacimiento);
-    $hoy = new DateTime();
-    $edad = $hoy->diff($fecha_nacimiento_dt)->y; // Calcula los años completos
-    if ($edad == 2 || $edad == 3 || $edad == 4) {
-        $area = 1;
-    } elseif ($edad == 5 || $edad == 6) {
-        $area = 2;
-    } elseif ($edad == 7 || $edad == 8) {
-        $area = 3;
-    } elseif ($edad >= 9) {
-        $area = 4;
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Edad fuera de rango permitido']);
+    // Calcular área según edad (rangos en tbl_areas)
+    $edad = calcular_edad($fecha_nacimiento);
+    if ($edad === null) {
+        echo json_encode(['status' => 'error', 'message' => 'Fecha de nacimiento inválida']);
+        exit();
+    }
+    $area = obtener_area_por_edad($conn, $edad);
+    if ($area === null) {
+        echo json_encode(['status' => 'error', 'message' => 'Edad fuera de rango permitido (mínimo ' . edad_minima_areas($conn) . ' años)']);
         exit();
     }
 
@@ -41,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             WHERE id_nino = ?");
 
         if ($stmt === false) {
-            echo json_encode(['status' => 'error', 'message' => 'Error al preparar la consulta: ' . $conn->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Error al preparar la consulta.' . registrar_error_bd($conn->error)]);
             exit();
         }
 
@@ -60,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($stmt->execute()) {
             echo json_encode(['status' => 'success', 'message' => 'Niño actualizado exitosamente']);
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Error al actualizar el niño: ' . $stmt->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Error al actualizar el niño.' . registrar_error_bd($stmt->error)]);
         }
         $stmt->close();
     } else {

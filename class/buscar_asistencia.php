@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 // Conexión a la base de datos
 include('../ajax/db_connect.php');  // Asegúrate de que tu archivo de conexión esté correctamente configurado
 

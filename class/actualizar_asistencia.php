@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 
 include('../ajax/db_connect.php');  // Incluye tu archivo de conexión
 
@@ -35,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         header('Content-Type: application/json');
-        echo json_encode(['status' => 'error', 'message' => 'Error al actualizar el estado: ' . $stmt->error]);
+        echo json_encode(['status' => 'error', 'message' => 'Error al actualizar el estado.' . registrar_error_bd($stmt->error)]);
     }
 
     $stmt->close();

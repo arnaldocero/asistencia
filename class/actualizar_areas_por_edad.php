@@ -1,50 +1,35 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 include('../ajax/db_connect.php');
+require_once __DIR__ . '/../ajax/areas.php';
 
-// Obtener todos los niños
-$sql = "SELECT id_nino, fecha_nacimiento FROM test_ninos";
+// Recalcula el área de todos los niños según su edad actual (rangos en tbl_areas)
+$sql = "SELECT id_nino, fecha_nacimiento, idarea FROM test_ninos WHERE activo = 1";
 $result = $conn->query($sql);
 
 $updated = 0;
+$omitidos = 0;
+$stmtUpdate = $conn->prepare("UPDATE test_ninos SET idarea = ? WHERE id_nino = ?");
 
 while ($row = $result->fetch_assoc()) {
-    $id_nino = $row['id_nino'];
-    $fecha_nacimiento = $row['fecha_nacimiento'];
+    $idarea = obtener_area_por_edad($conn, calcular_edad($row['fecha_nacimiento']));
 
-    // Calcular edad
-    $edad = date_diff(date_create($fecha_nacimiento), date_create('today'))->y;
-
-    // Determinar id_area según la edad
-    if ($edad >= 3 && $edad <= 4) {
-        $idarea = 1;
-    } elseif ($edad >= 5 && $edad <= 6) {
-        $idarea = 2;
-    } elseif ($edad >= 7 && $edad <= 8) {
-        $idarea = 3;
-    } elseif ($edad >= 9 && $edad <= 11) {
-        $idarea = 4;
-    } else {
-        continue; // Si no entra en ningún rango, omitir
+    if ($idarea === null) {
+        $omitidos++; // Fecha inválida o edad fuera de rango: se deja como está
+        continue;
     }
 
     // Actualizar solo si el área es diferente
-    $stmtCheck = $conn->prepare("SELECT idarea FROM test_ninos WHERE id_nino = ?");
-    $stmtCheck->bind_param("i", $id_nino);
-    $stmtCheck->execute();
-    $stmtCheck->bind_result($area_actual);
-    $stmtCheck->fetch();
-    $stmtCheck->close();
-
-    if ($area_actual != $idarea) {
-        $stmtUpdate = $conn->prepare("UPDATE test_ninos SET idarea = ? WHERE id_nino = ?");
+    if ((int)$row['idarea'] !== $idarea) {
+        $id_nino = (int)$row['id_nino'];
         $stmtUpdate->bind_param("ii", $idarea, $id_nino);
         $stmtUpdate->execute();
-        $stmtUpdate->close();
         $updated++;
     }
 }
+$stmtUpdate->close();
 
 echo json_encode([
     'status' => 'success',
-    'message' => "Áreas actualizadas para $updated niños."
+    'message' => "Áreas actualizadas para $updated niños. Sin área válida (fecha inválida o fuera de rango): $omitidos."
 ]);

@@ -23,7 +23,7 @@ $(document).ready(function() {
             tabla += '<tr><td colspan="2">No hay datos</td></tr>';
         } else {
             data.forEach(item => {
-                tabla += `<tr><td>${item.nombre_area}</td><td>${item.cantidad}</td></tr>`;
+                tabla += `<tr><td>${escaparHtml(item.nombre_area)}</td><td>${escaparHtml(item.cantidad)}</td></tr>`;
             });
         }
 
@@ -59,7 +59,7 @@ $('#buscarAsistencia').click(function () {
 });
 function cargarAsistenciab(turno, contenedor,fecha){
     $.ajax({
-        url: 'class/consultar_asistencia_por_areaservicionueves1.php',
+        url: 'class/consultar_asistencia_por_areaservicionueves.php',
         method: 'GET',
         data: { turno: turno, fecha: fecha },
         dataType: 'json',
@@ -80,7 +80,7 @@ function generarTabla1(data) {
         tabla += '<tr><td colspan="2">No hay datos</td></tr>';
     } else {
         data.forEach(item => {
-            tabla += `<tr><td>${item.nombre_area}</td><td>${item.cantidad}</td></tr>`;
+            tabla += `<tr><td>${escaparHtml(item.nombre_area)}</td><td>${escaparHtml(item.cantidad)}</td></tr>`;
         });
     }
 

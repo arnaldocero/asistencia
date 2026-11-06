@@ -17,6 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         // Verifica la contraseña
         if (password_verify($contrasena, $row['contrasena'])) {
+            // Nuevo ID de sesión al autenticarse (evita fijación de sesión) y nuevo token CSRF
+            session_regenerate_id(true);
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
             // Inicia sesión
             $_SESSION['usuario_id'] = $row['id_usuario'];
             $_SESSION['usuario_nombre'] = $row['nombre_usuario'];

@@ -1,196 +1,143 @@
--- phpMyAdmin SQL Dump
--- version 5.2.0
--- https://www.phpmyadmin.net/
+-- ============================================================================
+-- Casa Kids - Sistema de Asistencia: estructura de la base de datos
+-- Generado el 2026-11-05 desde la copia local (MariaDB 10.4).
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 18-09-2024 a las 07:01:43
--- Versión del servidor: 10.4.25-MariaDB
--- Versión de PHP: 8.1.10
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
+-- Contiene: estructura de las 7 tablas en uso + datos de catálogo
+-- (tbl_areas, consecutivo, diagnosticos_neurodivergencia).
+-- NO contiene datos personales (niños, asistencias, usuarios).
 --
--- Base de datos: `casa_kids_asistencia`
+-- Uso: crear una base vacía e importar este archivo (phpMyAdmin > Importar).
+-- Después crear el primer administrador (ver el final del archivo).
 --
+-- Las tablas antiguas `ninos` y `area` ya no se usan y no se incluyen.
+-- Cambios posteriores de estructura: sql_file/migraciones/
+-- ============================================================================
 
--- --------------------------------------------------------
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
---
--- Estructura de tabla para la tabla `area`
---
-
-CREATE TABLE `area` (
-  `id_area` int(11) NOT NULL,
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tbl_areas` (
+  `id_area` int(11) NOT NULL AUTO_INCREMENT,
   `nombre_area` varchar(100) NOT NULL,
-  `descripcion` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `area`
---
-
-INSERT INTO `area` (`id_area`, `nombre_area`, `descripcion`) VALUES
-(0, 'Área de 3 a 4 años ', 'esta el área que corresponde a los niños de 3 a 4 años'),
-(1, 'Área de 5 a 6 años ', 'esta el área que corresponde a los niños de 5 a 6 años'),
-(2, 'Área de 7 a 8 años ', 'esta el área que corresponde a los niños de 7 a 8 años'),
-(3, 'Área de 9 a 11 años ', 'esta el área que corresponde a los niños de 9 a 11 años');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `asistencia`
---
-
+  `descripcion` text DEFAULT NULL,
+  `edad_min` tinyint(3) unsigned DEFAULT NULL,
+  `edad_max` tinyint(3) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id_area`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `consecutivo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_area` int(11) NOT NULL,
+  `consecutivo` int(11) NOT NULL,
+  `fecha_consecutivo` date NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `id_area` (`id_area`),
+  CONSTRAINT `consecutivo_ibfk_1` FOREIGN KEY (`id_area`) REFERENCES `tbl_areas` (`id_area`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `diagnosticos_neurodivergencia` (
+  `id_diagnostico` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `activo` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id_diagnostico`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_ninos` (
+  `id_nino` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(255) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `apellido` varchar(255) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `nombre_padre` varchar(255) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `fecha_nacimiento` date NOT NULL,
+  `tiene_diagnostico` enum('0','1') CHARACTER SET latin1 COLLATE latin1_general_ci DEFAULT NULL COMMENT '0 = No tiene y 1 = a tiene ',
+  `telefono` varchar(15) CHARACTER SET latin1 COLLATE latin1_general_cs DEFAULT NULL,
+  `codigo_qr` varchar(250) CHARACTER SET latin1 COLLATE latin1_general_ci DEFAULT NULL,
+  `fecha_registro` timestamp NULL DEFAULT NULL,
+  `idarea` int(11) DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `fecha_baja` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_nino`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nino_diagnostico` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_nino` int(11) NOT NULL,
+  `id_diagnostico` int(11) NOT NULL,
+  `observaciones` text DEFAULT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_nino` (`id_nino`,`id_diagnostico`),
+  KEY `id_diagnostico` (`id_diagnostico`),
+  CONSTRAINT `nino_diagnostico_ibfk_1` FOREIGN KEY (`id_nino`) REFERENCES `test_ninos` (`id_nino`) ON DELETE CASCADE,
+  CONSTRAINT `nino_diagnostico_ibfk_2` FOREIGN KEY (`id_diagnostico`) REFERENCES `diagnosticos_neurodivergencia` (`id_diagnostico`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `asistencia` (
-  `id_asistencia` int(11) NOT NULL,
+  `id_asistencia` int(11) NOT NULL AUTO_INCREMENT,
   `id_nino` int(11) DEFAULT NULL,
   `id_area` int(11) DEFAULT NULL,
+  `consecutivo` int(11) DEFAULT NULL,
   `fecha_asistencia` date NOT NULL,
   `hora_entrada` time NOT NULL,
   `hora_salida` time DEFAULT NULL,
-  `estado` enum('0','1') DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `asistencia`
---
-
-INSERT INTO `asistencia` (`id_asistencia`, `id_nino`, `id_area`, `fecha_asistencia`, `hora_entrada`, `hora_salida`, `estado`) VALUES
-(1, 1, 1, '2024-09-10', '22:35:00', NULL, '1'),
-(2, 1, 1, '2024-09-10', '22:56:00', NULL, '0'),
-(3, 2, 1, '2024-09-10', '22:57:00', NULL, '0'),
-(4, 3, 2, '2024-09-10', '22:59:00', NULL, '0'),
-(5, 1, 1, '2024-09-13', '00:17:00', NULL, '1');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `ninos`
---
-
-CREATE TABLE `ninos` (
-  `id_nino` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `apellido` varchar(100) NOT NULL,
-  `fecha_nacimiento` date DEFAULT NULL,
-  `nombre_padre` varchar(100) DEFAULT NULL,
-  `telefono_padre` varchar(20) DEFAULT NULL,
-  `direccion` text DEFAULT NULL,
-  `codigo_qr` varchar(255) DEFAULT NULL,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Volcado de datos para la tabla `ninos`
---
-
-INSERT INTO `ninos` (`id_nino`, `nombre`, `apellido`, `fecha_nacimiento`, `nombre_padre`, `telefono_padre`, `direccion`, `codigo_qr`, `fecha_registro`) VALUES
-(1, 'AdminMasts', 'ser', '2024-09-10', 'ss', '22', 'calle 9a n 25-62', NULL, '2024-09-01 22:39:28'),
-(2, 'niños', 'dos', '2024-09-10', 'papa', '11', 'calla c', NULL, '2024-09-01 23:03:41'),
-(3, 'niño de prueba', 'pruba', '2024-09-08', 's', 's', 's', NULL, '2024-09-08 23:43:43');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `usuarios`
---
-
+  `estado` enum('0','1') DEFAULT NULL,
+  PRIMARY KEY (`id_asistencia`),
+  UNIQUE KEY `unique_nino_fecha` (`id_nino`,`fecha_asistencia`),
+  KEY `fk_id_areas` (`id_area`),
+  CONSTRAINT `fk_id_areas` FOREIGN KEY (`id_area`) REFERENCES `tbl_areas` (`id_area`),
+  CONSTRAINT `fk_id_ninos` FOREIGN KEY (`id_nino`) REFERENCES `test_ninos` (`id_nino`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `usuarios` (
-  `id_usuario` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
   `nombre_usuario` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `contrasena` varchar(255) NOT NULL,
   `rol` enum('admin','usuario') DEFAULT 'usuario',
-  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_usuario`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Volcado de datos para la tabla `usuarios`
---
+-- Datos de catálogo
+INSERT INTO `tbl_areas` VALUES (1,'Área de 2 a 4 años','Área destinada para niños de 2 a 4 años',2,4);
+INSERT INTO `tbl_areas` VALUES (2,'Área de 5 a 6 años','Área destinada para niños de 5 a 6 años',5,6);
+INSERT INTO `tbl_areas` VALUES (3,'Área de 7 a 8 años','Área destinada para niños de 7 a 8 años',7,8);
+INSERT INTO `tbl_areas` VALUES (4,'Área de 9 años en adelante','Área destinada para niños de 9 años en adelante',9,NULL);
+INSERT INTO `consecutivo` VALUES (1,1,300,'2026-10-19');
+INSERT INTO `consecutivo` VALUES (2,2,500,'2026-10-19');
+INSERT INTO `consecutivo` VALUES (3,3,700,'2026-10-19');
+INSERT INTO `consecutivo` VALUES (4,4,900,'2026-10-19');
+INSERT INTO `diagnosticos_neurodivergencia` VALUES (1,'Sensibilidad al ruido','Reacciona negativamente a ruidos fuertes o constantes',1);
+INSERT INTO `diagnosticos_neurodivergencia` VALUES (2,'Evita contacto físico','No tolera abrazos o contacto corporal',1);
+INSERT INTO `diagnosticos_neurodivergencia` VALUES (3,'Hipersensibilidad táctil','Molestia ante ciertas texturas',1);
+INSERT INTO `diagnosticos_neurodivergencia` VALUES (4,'Dificultad con multitudes','Se altera en espacios con muchas personas',1);
+INSERT INTO `diagnosticos_neurodivergencia` VALUES (5,'Necesidad de rutina','Se altera con cambios inesperados',1);
+INSERT INTO `diagnosticos_neurodivergencia` VALUES (6,'Hipersensibilidad visual','Molestia ante luces intensas',1);
+INSERT INTO `diagnosticos_neurodivergencia` VALUES (7,'Conducta repetitiva','Realiza movimientos repetitivos para autorregularse',1);
 
-INSERT INTO `usuarios` (`id_usuario`, `nombre_usuario`, `email`, `contrasena`, `rol`, `fecha_creacion`) VALUES
-(1, 'AdminCK', 'arnaldopachecosarmiento@gmail.com', '$2y$10$T5KIE1xUAINBpQy3hoDaQu4ivSiykKOOG7OYe.W6J3eDGJybfAlP6', 'admin', '2024-08-20 00:54:55');
+SET FOREIGN_KEY_CHECKS = 1;
 
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `area`
---
-ALTER TABLE `area`
-  ADD PRIMARY KEY (`id_area`);
-
---
--- Indices de la tabla `asistencia`
---
-ALTER TABLE `asistencia`
-  ADD PRIMARY KEY (`id_asistencia`),
-  ADD KEY `id_nino` (`id_nino`),
-  ADD KEY `id_area` (`id_area`);
-
---
--- Indices de la tabla `ninos`
---
-ALTER TABLE `ninos`
-  ADD PRIMARY KEY (`id_nino`),
-  ADD UNIQUE KEY `codigo_qr` (`codigo_qr`);
-
---
--- Indices de la tabla `usuarios`
---
-ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`id_usuario`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `area`
---
-ALTER TABLE `area`
-  MODIFY `id_area` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT de la tabla `asistencia`
---
-ALTER TABLE `asistencia`
-  MODIFY `id_asistencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT de la tabla `ninos`
---
-ALTER TABLE `ninos`
-  MODIFY `id_nino` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `usuarios`
---
-ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- Restricciones para tablas volcadas
---
-
---
--- Filtros para la tabla `asistencia`
---
-ALTER TABLE `asistencia`
-  ADD CONSTRAINT `asistencia_ibfk_1` FOREIGN KEY (`id_nino`) REFERENCES `ninos` (`id_nino`),
-  ADD CONSTRAINT `asistencia_ibfk_2` FOREIGN KEY (`id_area`) REFERENCES `area` (`id_area`);
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- ----------------------------------------------------------------------------
+-- Primer administrador: generar el hash de la contraseña con
+--   php -r "echo password_hash('LA_CONTRASEÑA', PASSWORD_DEFAULT);"
+-- y ejecutar:
+--   INSERT INTO usuarios (nombre_usuario, email, contrasena, rol)
+--   VALUES ('admin', 'correo@ejemplo.com', '<hash generado>', 'admin');
+-- Los demás usuarios se crean desde el menú "Registrar usuario".
+-- ----------------------------------------------------------------------------

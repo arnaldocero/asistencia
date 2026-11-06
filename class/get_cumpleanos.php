@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 header('Content-Type: application/json');
 include('../ajax/db_connect.php');
 
@@ -10,6 +11,7 @@ $sql = "
         CONCAT(nombre, ' ', apellido) AS nombre_completo,
         DATE(CONCAT(?, '-', LPAD(MONTH(fecha_nacimiento), 2, '0'), '-', LPAD(DAY(fecha_nacimiento), 2, '0'))) AS cumple_este_anio
     FROM test_ninos
+    WHERE activo = 1
     ORDER BY MONTH(fecha_nacimiento), DAY(fecha_nacimiento)
 ";
 

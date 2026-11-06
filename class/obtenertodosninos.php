@@ -1,7 +1,8 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 // Habilitar la visualización de errores (solo para depuración; deshabilitar en producción)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 // Establecer encabezado JSON
@@ -12,15 +13,15 @@ include('../ajax/db_connect.php'); // Asegúrate de que la ruta es correcta
 
 // Verificar la conexión
 if ($conn->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Conexión fallida: ' . $conn->connect_error]);
+    echo json_encode(['status' => 'error', 'message' => 'Conexión fallida.' . registrar_error_bd($conn->connect_error)]);
     exit(); // Finaliza el script si hay un error de conexión
 }
 
 // Preparar la consulta SQL utilizando sentencias preparadas
-$stmt = $conn->prepare("SELECT n.id_nino, n.nombre, n.apellido, n.nombre_padre FROM  test_ninos n  ORDER BY n.nombre;");
+$stmt = $conn->prepare("SELECT n.id_nino, n.nombre, n.apellido, n.nombre_padre FROM test_ninos n WHERE n.activo = 1 ORDER BY n.nombre;");
 
 if (!$stmt) {
-    echo json_encode(['status' => 'error', 'message' => 'Error al preparar la consulta: ' . $conn->error]);
+    echo json_encode(['status' => 'error', 'message' => 'Error al preparar la consulta.' . registrar_error_bd($conn->error)]);
     exit(); // Finaliza el script si hay un error al preparar la consulta
 }
 
@@ -31,7 +32,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result === false) {
-    echo json_encode(['status' => 'error', 'message' => 'Error al ejecutar la consulta: ' . $stmt->error]);
+    echo json_encode(['status' => 'error', 'message' => 'Error al ejecutar la consulta.' . registrar_error_bd($stmt->error)]);
     exit(); // Finaliza el script si hay un error al ejecutar la consulta
 }
 

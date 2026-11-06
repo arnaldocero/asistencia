@@ -1,157 +1,72 @@
+<?php
+// Solo un administrador con sesión iniciada puede crear usuarios
+include("class/verificar_sesion.php");
+if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+    header('Location: index.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
-<html dir="ltr">
+<html dir="ltr" lang="es">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="keywords"
-      content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 5 admin, bootstrap 5, css3 dashboard, bootstrap 5 dashboard, Matrix lite admin bootstrap 5 dashboard, frontend, responsive bootstrap 5 admin template, Matrix admin lite design, Matrix admin lite dashboard bootstrap 5 dashboard template"
-    />
-    <meta
-      name="description"
-      content="Matrix Admin Lite Free Version is powerful and clean admin dashboard template, inpired from Bootstrap Framework"
-    />
     <meta name="robots" content="noindex,nofollow" />
-    <title>Matrix Admin Lite Free Versions Template by WrapPixel</title>
-    <!-- Favicon icon -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="assets/images/favicon.png"
-    />
-    <!-- Custom CSS -->
+    <title>Casa Kids - Registrar usuario</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon.png" />
+    <link href="assets/libs/toastr/build/toastr.min.css" rel="stylesheet" />
     <link href="dist/css/style.min.css" rel="stylesheet" />
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
   </head>
 
   <body>
     <div class="main-wrapper">
-      <!-- ============================================================== -->
-      <!-- Preloader - style you can find in spinners.css -->
-      <!-- ============================================================== -->
       <div class="preloader">
         <div class="lds-ripple">
           <div class="lds-pos"></div>
           <div class="lds-pos"></div>
         </div>
       </div>
-      <!-- ============================================================== -->
-      <!-- Preloader - style you can find in spinners.css -->
-      <!-- ============================================================== -->
-      <!-- ============================================================== -->
-      <!-- Login box.scss -->
-      <!-- ============================================================== -->
-      <div
-        class="
-          auth-wrapper
-          d-flex
-          no-block
-          justify-content-center
-          align-items-center
-          bg-dark
-        "
-      >
+      <div class="auth-wrapper d-flex no-block justify-content-center align-items-center bg-dark">
         <div class="auth-box bg-dark border-top border-secondary">
           <div>
             <div class="text-center pt-3 pb-3">
-              <span class="db"
-                ><img src="assets/images/logo.png" alt="logo"
-              /></span>
+              <span class="db"><img src="assets/images/logo.png" alt="logo" /></span>
+              <h4 class="text-white mt-3">Registrar usuario</h4>
             </div>
-            <!-- Form -->
-            <form class="form-horizontal mt-3" action="index.html">
+            <form id="registroUsuarioForm" class="form-horizontal mt-3" autocomplete="off">
               <div class="row pb-4">
                 <div class="col-12">
                   <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span
-                        class="input-group-text bg-success text-white h-100"
-                        id="basic-addon1"
-                        ><i class="mdi mdi-account fs-4"></i
-                      ></span>
-                    </div>
-                    <input
-                      type="text"
-                      class="form-control form-control-lg"
-                      placeholder="Username"
-                      aria-label="Username"
-                      aria-describedby="basic-addon1"
-                      required
-                    />
-                  </div>
-                  <!-- email -->
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span
-                        class="input-group-text bg-danger text-white h-100"
-                        id="basic-addon1"
-                        ><i class="mdi mdi-email fs-4"></i
-                      ></span>
-                    </div>
-                    <input
-                      type="text"
-                      class="form-control form-control-lg"
-                      placeholder="Email Address"
-                      aria-label="Username"
-                      aria-describedby="basic-addon1"
-                      required
-                    />
+                    <span class="input-group-text bg-success text-white h-100"><i class="mdi mdi-account fs-4"></i></span>
+                    <input type="text" name="nombre_usuario" class="form-control form-control-lg" placeholder="Nombre de usuario" aria-label="Nombre de usuario" minlength="3" maxlength="100" required />
                   </div>
                   <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span
-                        class="input-group-text bg-warning text-white h-100"
-                        id="basic-addon2"
-                        ><i class="mdi mdi-lock fs-4"></i
-                      ></span>
-                    </div>
-                    <input
-                      type="text"
-                      class="form-control form-control-lg"
-                      placeholder="Password"
-                      aria-label="Password"
-                      aria-describedby="basic-addon1"
-                      required
-                    />
+                    <span class="input-group-text bg-danger text-white h-100"><i class="mdi mdi-email fs-4"></i></span>
+                    <input type="email" name="email" class="form-control form-control-lg" placeholder="Correo electrónico" aria-label="Correo electrónico" maxlength="100" required />
                   </div>
                   <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span
-                        class="input-group-text bg-info text-white h-100"
-                        id="basic-addon2"
-                        ><i class="mdi mdi-lock fs-4"></i
-                      ></span>
-                    </div>
-                    <input
-                      type="text"
-                      class="form-control form-control-lg"
-                      placeholder=" Confirm Password"
-                      aria-label="Password"
-                      aria-describedby="basic-addon1"
-                      required
-                    />
+                    <span class="input-group-text bg-warning text-white h-100"><i class="mdi mdi-lock fs-4"></i></span>
+                    <input type="password" name="contrasena" class="form-control form-control-lg" placeholder="Contraseña (mínimo 8 caracteres)" aria-label="Contraseña" minlength="8" autocomplete="new-password" required />
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text bg-info text-white h-100"><i class="mdi mdi-lock fs-4"></i></span>
+                    <input type="password" name="confirmar" class="form-control form-control-lg" placeholder="Confirmar contraseña" aria-label="Confirmar contraseña" minlength="8" autocomplete="new-password" required />
+                  </div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text bg-secondary text-white h-100"><i class="mdi mdi-account-key fs-4"></i></span>
+                    <select name="rol" class="form-select form-control-lg" aria-label="Rol">
+                      <option value="usuario" selected>Usuario (recepción)</option>
+                      <option value="admin">Administrador</option>
+                    </select>
                   </div>
                 </div>
               </div>
               <div class="row border-top border-secondary">
                 <div class="col-12">
-                  <div class="form-group">
-                    <div class="pt-3 d-grid">
-                      <button
-                        class="btn btn-block btn-lg btn-info"
-                        type="submit"
-                      >
-                        Sign Up
-                      </button>
-                    </div>
+                  <div class="pt-3 d-flex gap-2">
+                    <a href="index.php" class="btn btn-lg btn-secondary flex-fill">Volver</a>
+                    <button id="btnRegistrarUsuario" class="btn btn-lg btn-info flex-fill" type="submit">Registrar</button>
                   </div>
                 </div>
               </div>
@@ -159,33 +74,46 @@
           </div>
         </div>
       </div>
-      <!-- ============================================================== -->
-      <!-- Login box.scss -->
-      <!-- ============================================================== -->
-      <!-- ============================================================== -->
-      <!-- Page wrapper scss in scafholding.scss -->
-      <!-- ============================================================== -->
-      <!-- ============================================================== -->
-      <!-- Page wrapper scss in scafholding.scss -->
-      <!-- ============================================================== -->
-      <!-- ============================================================== -->
-      <!-- Right Sidebar -->
-      <!-- ============================================================== -->
-      <!-- ============================================================== -->
-      <!-- Right Sidebar -->
-      <!-- ============================================================== -->
     </div>
-    <!-- ============================================================== -->
-    <!-- All Required js -->
-    <!-- ============================================================== -->
+
     <script src="assets/libs/jquery/dist/jquery.min.js"></script>
-    <!-- Bootstrap tether Core JavaScript -->
     <script src="assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- ============================================================== -->
-    <!-- This page plugin js -->
-    <!-- ============================================================== -->
+    <script src="assets/libs/toastr/build/toastr.min.js"></script>
+    <script src="dist/js/sesion.js"></script>
     <script>
       $(".preloader").fadeOut();
+
+      $("#registroUsuarioForm").on("submit", function (e) {
+        e.preventDefault();
+        var form = this;
+        if (form.contrasena.value !== form.confirmar.value) {
+          toastr.warning("Las contraseñas no coinciden.");
+          return;
+        }
+        $("#btnRegistrarUsuario").prop("disabled", true);
+        $.ajax({
+          type: "POST",
+          url: "class/registrar_usuario.php",
+          data: $(form).serialize(),
+          dataType: "json",
+          success: function (res) {
+            if (res.status === "success") {
+              toastr.success(res.message, "Sistema");
+              form.reset();
+            } else {
+              toastr.warning(res.message);
+            }
+          },
+          error: function (xhr) {
+            if (xhr.status !== 401 && xhr.status !== 403) {
+              toastr.error("Error de conexión al registrar el usuario.");
+            }
+          },
+          complete: function () {
+            $("#btnRegistrarUsuario").prop("disabled", false);
+          }
+        });
+      });
     </script>
   </body>
 </html>

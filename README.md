@@ -1,189 +1,68 @@
-# Matrix Admin Bootstrap 5
+# Casa Kids – Sistema de Asistencia
 
-<ul>
-  <li>  
-    <h4><a href="https://matrixadmin.wrappixel.com/">Demo Link</a></h4>
-  </li>
-  <li>
-    <h4><a href="http://matrixadmin.wrappixel.com/matrix-admin-package-full.zip">Download Link</a></h4>
-  </li>
-</ul>
-  
-<!-- Main image of Template -->
-<a target="_blank" href="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/matrix-bootstrap-admin-y.jpg">
-  <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/matrix-bootstrap-admin-y.jpg" />
-</a>
+Aplicación web para registrar la asistencia diaria de los niños de Casa Kids. Cuando se hace el check-in, imprime un sticker de identificación con un número consecutivo por área. Funciona en el PC de recepción y en celulares a la vez, todos conectados a la misma base de datos.
 
-<!-- Description of Template -->
-<p>Matrix Admin is basic yet very useful bootstrap 5 dashbaord template for your projects.If you are looking for modern yet clean admin template for your backend project. Matrix Admin is the right choice for you. If your application requires more options. We like to suggest you the Premium Templates.</p>
+## Funcionalidades
 
-<p>Please give us rate on github, Thanks<p>
+- **Inicio de sesión** con roles `admin` y `usuario`. La sesión se cierra tras 4 horas de inactividad.
+- **Registro de niños** con fecha de nacimiento, acudiente, teléfono y diagnósticos. El área se asigna según la edad y se genera un código QR.
+- **Check-in diario**: busca al niño, registra la hora y asigna el consecutivo del área. No permite registrar dos veces al mismo niño el mismo día.
+- **Sticker** en impresora térmica (ZPL) a través de QZ Tray.
+- **Sincronización celular → PC**: el PC con impresora consulta cada 4 s e imprime los registros hechos desde celulares.
+- **Reportes** por mes, área y turno, y un **calendario de cumpleaños**.
+- **Administración**: eliminar niños (borrado lógico) y registrar usuarios. Solo para el rol `admin`.
 
-<!-- Upgrade to Premium version of Template -->
-<h2>Upgrade to Premium Admin Dashboards</h2>
+## Tecnologías
 
-<!-- bootstrap premium dashboards -->
-<table>
-<thead>
-<tr>
-<th>MaterialPro Bootstrap Admin</th>
-<th>Ample Bootstrap Admin</th>
-<th>Monster Bootstrap Admin</th>
-<th>AdminPro Bootstrap Theme</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-  <a href="https://www.wrappixel.com/templates/materialpro/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/materialpro-bootstrap-admin-y.jpg" alt="Material pro Bootstrap" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/ampleadmin/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/ample-admin-bootstrap-y.jpg" alt="Ample Bootstrap Admin" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/monsteradmin/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/monster-bootstrap-admin-y.jpg" alt="Monster Bootstrap Admin" style="max-width:150px;">
-  </a>
-</td>
-  <td>
-  <a href="https://www.wrappixel.com/templates/adminpro/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/adminpro-bootstrap-admin-template-y.jpg" alt="AdminPro Bootstrap Theme" style="max-width:150px;">
-  </a>
-</td>
-</tr>
-</tbody>
-</table>
+| Capa | Tecnología |
+| --- | --- |
+| Servidor | PHP 8 (mysqli, GD), Apache |
+| Base de datos | MySQL / MariaDB (InnoDB, utf8mb4) |
+| Interfaz | Plantilla Matrix Admin, Bootstrap 5, jQuery 3 y jQuery UI, DataTables, Toastr |
+| Gráficas | Chart.js, Flot, FullCalendar |
+| QR | phpqrcode |
+| Impresión | QZ Tray + impresora 4BARCODE 4B-2054TF (ZPL) |
 
-<!-- angular premium dashboards -->
-<table>
-<thead>
-<tr>
-<th>MaterialPro Angular Admin</th>
-<th>Ample Admin Angular</th>
-<th>Monster Angular Admin</th>
-<th>AdminPro Angular Admin</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-  <a href="https://www.wrappixel.com/templates/materialpro-angular-dashboard/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/materialpro-angular-admin-y.jpg" alt="MaterialPro Angular 11 Admin" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/ample-admin-angular/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/ample-admin-angular-y.jpg" alt="Ample Angular Admin" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/monster-angular-dashboard/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/monster-angular-admin-y.jpg" alt="Monster Angular Admin" style="max-width:150px;">
-  </a>
-</td>
-  <td>
-  <a href="https://www.wrappixel.com/templates/adminpro-angular-dashboard/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/adminpro-angular-dashboard-y.jpg" alt="AdminPro Angular Theme" style="max-width:150px;">
-  </a>
-</td>
-</tr>
-</tbody>
-</table>
+## Estructura
 
-<!-- react premium dashboards -->
-<table>
-<thead>
-<tr>
-<th>MaterialPro React Admin</th>
-<th>Ample React Admin</th>
-<th>Monster React Admin</th>
-<th>AdminPro React Admin</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-  <a href="https://www.wrappixel.com/templates/materialpro-react-redux-admin/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/materialpro-react-admin-y.jpg" alt="MaterialPro React Redux Admin" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/ample-react-dashboard/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/09/ample-react-admin-template-y.png" alt="Ample React Admin" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/monster-react-admin/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/06/monster-react-admin-template-y-20.jpg" alt="Monster React Admin" style="max-width:150px;">
-  </a>
-</td>
-  <td>
-  <a href="https://www.wrappixel.com/templates/adminpro-react-redux-admin/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/adminpro-react-dashboard-y.jpg" alt="AdminPro React Theme" style="max-width:150px;">
-  </a>
-</td>
-</tr>
-</tbody>
-</table>
+```
+ajax/db_connect.php     Conexión a la BD (lee config/), zona horaria y manejo de errores
+ajax/areas.php          Cálculo de edad y área (rangos en tbl_areas)
+class/                  Endpoints AJAX (JSON). Todos exigen sesión: verificar_sesion_api.php
+class/verificar_sesion.php      Verificación de sesión para las páginas (+ token CSRF)
+config/                 Configuración por entorno (config.local.php no se sube a git)
+dist/js/miconfig.js     Lógica de check-in, tablas, sincronización e impresión
+dist/js/sesion.js       CSRF, redirección al login con 401 y escaparHtml()
+dist/img/codigosqr/     QR generados (no se suben a git)
+sql_file/               Estructura de la BD y migraciones
+*.php (raíz)            Páginas: index, listaninos, reportes, charts, cumpleanos, login, registro
+```
 
-<!-- vuejs premium dashboards -->
-<table>
-<thead>
-<tr>
-<th>MaterialPro Vuetify Admin</th>
-<th>Xtreme Vuesax Pro</th>
-<th>AdminPro Vuetify Dashboard</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-  <a href="https://www.wrappixel.com/templates/materialpro-vuetify-admin/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/05/materialpro-vuejs-dashboard-template-20.jpg" alt="MaterialPro Vuetify Admin" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/xtreme-vuesax-admin-pro/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/04/xtreme-vuesax-admin-y.jpg" alt="Xtreme Vuesax Admin" style="max-width:150px;">
-  </a>
-</td>
-<td>
-  <a href="https://www.wrappixel.com/templates/adminpro-vuetify-dashboard/" rel="nofollow" width="150px">
-    <img src="https://www.wrappixel.com/wp-content/uploads/edd/2020/10/adminpro-vuetify-dasboard-template-y.jpg" alt="AdminPro Vuetify Dashboard" style="max-width:150px;">
-  </a>
-</td>
-</tr>
-</tbody>
-</table>
-<!-- Licensing of Template -->
-<h2>Licensing</h2>
-<ul>
-  <li>
-    <p>Copyright 2021 Wrappixel (<a href="https://www.wrappixel.com/" rel="nofollow">https://www.wrappixel.com/</a>)</p>
-  </li>
-  <li>
-    <p>Licensed under MIT (<a href="https://www.wrappixel.com/license/">https://www.wrappixel.com/license/</a>)</p>
-  </li>
-</ul>
+## Instalación local (XAMPP)
 
-<!-- Useful Links of Template -->
-<h2>Useful Links</h2>
-<ul>
-<li><a href="https://www.wrappixel.com/templates/category/admin-dashboard-templates/">Admin Panel Template</a> from WrapPixel</li>
-<li><a href="https://www.wrappixel.com/templates/category/bootstrap-templates/">Bootstrap 5 Themes</a> from WrapPixel</li>
-<li><a href="https://www.wrappixel.com/templates/category/bootstrap-admin-dashboard-template/">Bootstrap 5 Admin Templates</a> from WrapPixel</li>
-<li><a href="https://www.wrappixel.com/templates/category/angular-templates/">Angular JS Dashboard</a> from WrapPixel</li>
-<li><a href="https://www.wrappixel.com/templates/category/react-templates/">React Website Templates</a> from WrapPixel</li>
-<li><a href="https://www.wrappixel.com/templates/category/vuejs-templates/">Vue JS Templates</a> from WrapPixel</li>
-<li><a href="https://www.wrappixel.com/templates/category/free-templates/">Free Themes</a> from WrapPixel</li>
-</ul>
+1. Clona el repositorio dentro de `C:\xampp\htdocs\`.
+2. En `C:\xampp\php\php.ini` activa `extension=gd`, necesaria para los QR, y reinicia Apache.
+3. Crea una base de datos y luego:
+   - **Base nueva:** importa `sql_file/herramie_asistencia.sql` y crea el primer administrador con las instrucciones que están al final de ese archivo.
+   - **Copia de producción:** impórtala y ejecuta las migraciones pendientes de `sql_file/migraciones/`, en orden de fecha.
+4. Copia `config/config.example.php` como `config/config.local.php` y completa los datos de la base.
+5. Abre `http://localhost/<carpeta>/authentication-login.php`.
 
-<!-- Social Media of Wrappixel -->
-<h2>Social Media</h2>
-<p>Facebook: <a href="https://www.facebook.com/wrappixel">https://www.facebook.com/wrappixel</a></p>
-<p>Twitter: <a href="https://twitter.com/wrappixel">https://twitter.com/wrappixel</a></p>
-<p>Medium: <a href="https://medium.com/wrappixel">https://medium.com/wrappixel</a></p>
+## Despliegue en producción
+
+1. Sube los archivos **sin sobrescribir** `config/config.local.php` ni `dist/img/codigosqr/` del servidor.
+2. Si es la primera vez, crea en el servidor `config/config.local.php` con las credenciales de producción.
+3. Ejecuta en phpMyAdmin las migraciones nuevas de `sql_file/migraciones/`. Todas se pueden ejecutar más de una vez sin problema.
+4. Una vez al mes, abre `class/actualizar_areas_por_edad.php` con sesión iniciada para recalcular las áreas de los niños que cumplieron años.
+
+## Equipos
+
+- **PC de recepción:** navegador con **QZ Tray** abierto y la impresora conectada por USB. Imprime los stickers de todos los registros, incluidos los hechos desde celulares. Su pestaña puede quedar en segundo plano, pero el navegador puede ralentizar las consultas tras varios minutos oculto. Conviene dejarla visible.
+- **Celulares o tabletas:** solo navegador. Registran sin imprimir y pausan la sincronización cuando la pestaña está oculta.
+
+## Seguridad
+
+- Las credenciales viven en `config/config.local.php`, excluido de git y bloqueado por `.htaccess`.
+- Todos los endpoints de `class/` exigen sesión. Las peticiones POST exigen además el token CSRF que envía `dist/js/sesion.js`.
+- Eliminar niños y crear usuarios requiere el rol `admin`.
+- Los errores técnicos van al log del servidor y no al navegador.

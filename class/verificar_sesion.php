@@ -30,4 +30,16 @@ if (isset($_SESSION['ultimo_acceso'])) {
 
 // Actualizar tiempo del último acceso
 $_SESSION['ultimo_acceso'] = time();
+
+// Token CSRF: uno por sesión. Se entrega en una cookie que lee dist/js/sesion.js
+// y lo reenvía en la cabecera X-CSRF-Token de cada POST (ver verificar_sesion_api.php).
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+setcookie('XSRF-TOKEN', $_SESSION['csrf_token'], [
+    'path' => '/',
+    'samesite' => 'Strict',
+    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'httponly' => false // JavaScript debe poder leerla
+]);
 ?>

@@ -1,90 +1,152 @@
 <?php
+require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 // Incluir el archivo de conexión a la base de datos
 date_default_timezone_set('America/Bogota');
+header('Content-Type: application/json; charset=utf-8');
+
 include('../ajax/db_connect.php');
 
-// Obtener los valores enviados por POST
-$id_nino = $_POST['id_nino'];
-$id_area = $_POST['id_area'];
+// Obtener y sanitizar valores enviados por POST
+$id_nino = isset($_POST['id_nino']) ? intval($_POST['id_nino']) : 0;
+$id_area = isset($_POST['id_area']) ? intval($_POST['id_area']) : 0;
 $fecha_asistencia = date('Y-m-d');
-
-// Comprobar si ya existe un registro de asistencia para el niño en el día actual
-$sqlCheck = "SELECT id_asistencia, estado FROM asistencia WHERE id_nino = ? AND fecha_asistencia = ?";
-$stmtCheck = $conn->prepare($sqlCheck);
-$stmtCheck->bind_param("is", $id_nino, $fecha_asistencia);
-$stmtCheck->execute();
-$resultCheck = $stmtCheck->get_result();
-
-if ($resultCheck->num_rows > 0) {
-    $row = $resultCheck->fetch_assoc();
-    if ($row['estado'] == '1') {
-        // Si ya está registrado, devolver mensaje
-        echo json_encode(['mensaje' => 'La asistencia ya está registrada para hoy.', 'estado' => '1']);
-        exit; // Salir para no ejecutar más código
-    }
-}
-
-// Insertar registro en la tabla asistencia
 $hora_entrada = date('H:i:s');
-$sql = "INSERT INTO asistencia (id_nino, id_area, fecha_asistencia, hora_entrada, estado) 
-        VALUES (?, ?, ?, ?, '1')"; // Estado se establece directamente a '1'
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("iiss", $id_nino, $id_area, $fecha_asistencia, $hora_entrada);
 
-if (!$stmt->execute()) {
+if ($id_nino <= 0 || $id_area <= 0) {
     echo json_encode([
-        'mensaje' => 'Error al registrar asistencia: ' . $stmt->error,
-        'estado' => '0'
+        'status' => 'error',
+        'estado' => '0',
+        'mensaje' => 'Datos inválidos o incompletos para registrar la asistencia.'
     ]);
     exit;
 }
 
-// Obtener el ID generado para la asistencia
-$id_asistencia = $conn->insert_id;
+// Que cualquier error de MySQL lance excepción (así un fallo nunca confirma la transacción a medias)
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-// Obtener el nombre del niño
-$sqlNino = "SELECT nombre, apellido, codigo_qr AS qr FROM test_ninos WHERE id_nino = ?";
-$stmtNino = $conn->prepare($sqlNino);
-$stmtNino->bind_param("i", $id_nino);
-$stmtNino->execute();
-$resultNino = $stmtNino->get_result();
-$rowNino = $resultNino->fetch_assoc();
-$nombre = $rowNino['nombre'];
-$apellido = $rowNino['apellido'];
-$codigoqr = $rowNino['qr'];
+$max_intentos = 3;
+for ($intento = 1; $intento <= $max_intentos; $intento++) {
+    // Iniciar transacción para evitar condiciones de carrera (dos dispositivos al mismo tiempo)
+    $conn->begin_transaction();
 
-// Obtener el consecutivo actual del área
-$sqlConsecutivo = "SELECT consecutivo FROM consecutivo WHERE id_area = ? ORDER BY fecha_consecutivo DESC LIMIT 1";
-$stmtConsecutivo = $conn->prepare($sqlConsecutivo);
-$stmtConsecutivo->bind_param("i", $id_area);
-$stmtConsecutivo->execute();
-$resultConsecutivo = $stmtConsecutivo->get_result();
-$rowConsecutivo = $resultConsecutivo->fetch_assoc();
-$consecutivo = $rowConsecutivo ? $rowConsecutivo['consecutivo'] : 0;
+    try {
+        // 1. Comprobar si ya existe registro hoy bloqueando la lectura
+        $sqlCheck = "SELECT id_asistencia, consecutivo, estado FROM asistencia WHERE id_nino = ? AND fecha_asistencia = ? FOR UPDATE";
+        $stmtCheck = $conn->prepare($sqlCheck);
+        $stmtCheck->bind_param("is", $id_nino, $fecha_asistencia);
+        $stmtCheck->execute();
+        $resCheck = $stmtCheck->get_result();
 
-// Actualizar el consecutivo para el área
-$nuevoConsecutivo = $consecutivo + 1;
-$sqlUpdateConsecutivo = "UPDATE consecutivo SET consecutivo = ?, fecha_consecutivo = ? WHERE id_area = ?";
-$stmtUpdate = $conn->prepare($sqlUpdateConsecutivo);
-$fechaHoy = date('Y-m-d');
-$stmtUpdate->bind_param("isi", $nuevoConsecutivo, $fechaHoy, $id_area);
-$stmtUpdate->execute();
+        if ($resCheck->num_rows > 0) {
+            $asistenciaExistente = $resCheck->fetch_assoc();
+            $stmtCheck->close();
+            $conn->commit();
 
-// Actualizar el registro de asistencia con el nuevo consecutivo
-$sqlUpdateAsistencia = "UPDATE asistencia SET consecutivo = ? WHERE id_asistencia = ?";
-$stmtUpdateAsistencia = $conn->prepare($sqlUpdateAsistencia);
-$stmtUpdateAsistencia->bind_param("ii", $nuevoConsecutivo, $id_asistencia);
-$stmtUpdateAsistencia->execute();
+            echo json_encode([
+                'status' => 'already_registered',
+                'estado' => '1',
+                'mensaje' => 'El niño ya fue registrado hoy por otro usuario.',
+                'ya_registrado' => true
+            ]);
+            exit;
+        }
+        $stmtCheck->close();
 
-// Devolver la respuesta JSON
-echo json_encode([
-    'mensaje' => 'Asistencia registrada correctamente',
-    'estado' => '1',
-    'nombre' => $nombre,
-    'apellido' => $apellido,
-    'nombre_nino' => $nombre . ' ' . $apellido, // Si quieres seguir enviando el nombre completo también
-    'consecutivo' => $nuevoConsecutivo,
-    'codigoQR' => $codigoqr,
-    'id_asistencia' => $id_asistencia
-]);
-?>
+        // 2. Obtener datos del niño
+        $sqlNino = "SELECT nombre, apellido, codigo_qr AS qr FROM test_ninos WHERE id_nino = ? AND activo = 1";
+        $stmtNino = $conn->prepare($sqlNino);
+        $stmtNino->bind_param("i", $id_nino);
+        $stmtNino->execute();
+        $resNino = $stmtNino->get_result();
+
+        if ($resNino->num_rows === 0) {
+            throw new Exception("El niño no existe en el sistema.");
+        }
+        $rowNino = $resNino->fetch_assoc();
+        $nombre   = $rowNino['nombre'];
+        $apellido = $rowNino['apellido'];
+        $codigoqr = $rowNino['qr'];
+        $stmtNino->close();
+
+        // 3. Obtener y actualizar consecutivo para el área (bloqueo para que no se repita)
+        $sqlConsecutivo = "SELECT consecutivo FROM consecutivo WHERE id_area = ? ORDER BY fecha_consecutivo DESC LIMIT 1 FOR UPDATE";
+        $stmtConsecutivo = $conn->prepare($sqlConsecutivo);
+        $stmtConsecutivo->bind_param("i", $id_area);
+        $stmtConsecutivo->execute();
+        $resConsecutivo = $stmtConsecutivo->get_result();
+        $rowConsecutivo = $resConsecutivo->fetch_assoc();
+        $consecutivo = $rowConsecutivo ? intval($rowConsecutivo['consecutivo']) : 0;
+        $stmtConsecutivo->close();
+
+        $nuevoConsecutivo = $consecutivo + 1;
+        $fechaHoy = date('Y-m-d');
+
+        $sqlUpdateConsecutivo = "UPDATE consecutivo SET consecutivo = ?, fecha_consecutivo = ? WHERE id_area = ?";
+        $stmtUpdate = $conn->prepare($sqlUpdateConsecutivo);
+        $stmtUpdate->bind_param("isi", $nuevoConsecutivo, $fechaHoy, $id_area);
+        $stmtUpdate->execute();
+        $stmtUpdate->close();
+
+        // 4. Insertar registro de asistencia con su consecutivo de una sola vez
+        $sqlInsert = "INSERT INTO asistencia (id_nino, id_area, fecha_asistencia, hora_entrada, estado, consecutivo) 
+                      VALUES (?, ?, ?, ?, '1', ?)";
+        $stmtInsert = $conn->prepare($sqlInsert);
+        $stmtInsert->bind_param("iissi", $id_nino, $id_area, $fecha_asistencia, $hora_entrada, $nuevoConsecutivo);
+        $stmtInsert->execute();
+        $id_asistencia = $conn->insert_id;
+        $stmtInsert->close();
+
+        // Confirmar la transacción
+        $conn->commit();
+
+        echo json_encode([
+            'status' => 'success',
+            'mensaje' => 'Asistencia registrada correctamente',
+            'estado' => '1',
+            'nombre' => $nombre,
+            'apellido' => $apellido,
+            'nombre_nino' => $nombre . ' ' . $apellido,
+            'consecutivo' => $nuevoConsecutivo,
+            'codigoQR' => $codigoqr,
+            'id_asistencia' => $id_asistencia
+        ]);
+        break;
+
+    } catch (mysqli_sql_exception $e) {
+        $conn->rollback();
+
+        // 1213 = deadlock, 1205 = espera de bloqueo agotada: dos dispositivos chocaron, se reintenta.
+        // En el reintento la fila del otro ya existe y se responde "ya registrado".
+        if (($e->getCode() == 1213 || $e->getCode() == 1205) && $intento < $max_intentos) {
+            usleep(random_int(50000, 150000));
+            continue;
+        }
+
+        // 1062 = el índice único (id_nino, fecha_asistencia) rechazó un segundo registro simultáneo
+        if ($e->getCode() == 1062) {
+            echo json_encode([
+                'status' => 'already_registered',
+                'estado' => '1',
+                'mensaje' => 'El niño ya fue registrado hoy por otro usuario.',
+                'ya_registrado' => true
+            ]);
+        } else {
+            error_log('registrar_asistenciaV2: ' . $e->getMessage());
+            echo json_encode([
+                'status' => 'error',
+                'estado' => '0',
+                'mensaje' => 'Error al registrar la asistencia. Intenta de nuevo.'
+            ]);
+        }
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo json_encode([
+            'status' => 'error',
+            'estado' => '0',
+            'mensaje' => 'Error al registrar la asistencia: ' . $e->getMessage()
+        ]);
+    }
+    break; // Error no recuperable: ya se respondió, no se reintenta
+}
+
+$conn->close();
