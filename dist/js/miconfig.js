@@ -188,11 +188,14 @@ function sincronizarConCelular() {
             if (res.status === 'success' && res.hay_nuevos) {
                 res.nuevos.forEach(function(item) {
                     toastr.info("Nuevo registro desde celular: " + item.nombre + " " + item.apellido, "Asistencia");
-                    
+                    if (item.cumplio) {
+                        avisoCumpleanos(item.nombre + " " + item.apellido, item.mes_cumple, item.edad_cumplida);
+                    }
+
                     // Si este equipo tiene la impresora conectada, imprime automáticamente el sticker del celular
                     if (impresoraConectada() && !asistenciasImpresas[item.id_asistencia]) {
                         asistenciasImpresas[item.id_asistencia] = true;
-                        printTicket(item.nombre, item.apellido, item.consecutivo, item.codigo_qr);
+                        printTicket(item.nombre, item.apellido, item.consecutivo, item.codigo_qr, item.cumplio);
                     }
                     
                     if (parseInt(item.id_asistencia) > ultimoIdAsistencia) {
@@ -225,8 +228,11 @@ function registrarAsistenciaV2(idNino, idarea) {
             if (res.status === 'success') {
                 toastr.success(res.mensaje);
                 $("#asistencia_mensaje").text(res.mensaje);
+                if (res.cumplio) {
+                    avisoCumpleanos(res.nombre_nino, res.mes_cumple, res.edad_cumplida);
+                }
                 asistenciasImpresas[res.id_asistencia] = true; // la sincronización no lo vuelve a imprimir
-                printTicket(res.nombre, res.apellido, res.consecutivo, res.codigoQR);
+                printTicket(res.nombre, res.apellido, res.consecutivo, res.codigoQR, res.cumplio);
                 validarFechaNacimiento(idNino);
             } else if (res.status === 'already_registered') {
                 toastr.warning(res.mensaje, "Ya Registrado");
@@ -447,8 +453,8 @@ function printTicketAgain(idNino, idAsistencia) {
         data: { id_nino: idNino, id_asistencia: idAsistencia },
         success: function(response) {
             if (response.status === 'success') {
-                const { nombre, apellido, consecutivo, codigo_qr } = response.data;
-                printTicket(nombre, apellido, consecutivo, codigo_qr);
+                const { nombre, apellido, consecutivo, codigo_qr, cumplio } = response.data;
+                printTicket(nombre, apellido, consecutivo, codigo_qr, cumplio);
             }
         }
     });
@@ -471,29 +477,60 @@ function zplTexto(texto) {
     return salida;
 }
 
-// ZPL del sticker: dos copias iguales lado a lado (izquierda x=10, derecha x=400)
-function construirZplSticker(nombre, apellido, consecutivo, fechaImpresion) {
+// Pastel con velas dibujado con líneas ZPL (^GB cajas, ^GC círculos), esquina superior
+// derecha de cada copia; x0 = desplazamiento de la copia (0 izquierda, 394 derecha)
+function zplPastel(x0) {
+    const X = v => x0 + v;
+    return `
+^FO${X(320)},4^GC8,8,B^FS
+^FO${X(333)},4^GC8,8,B^FS
+^FO${X(346)},4^GC8,8,B^FS
+^FO${X(322)},12^GB4,14,4^FS
+^FO${X(335)},12^GB4,14,4^FS
+^FO${X(348)},12^GB4,14,4^FS
+^FO${X(312)},26^GB50,16,3^FS
+^FO${X(302)},42^GB70,22,3^FS
+^FO${X(302)},50^GB70,3,3^FS
+^FO${X(296)},63^GB82,4,4^FS`;
+}
+
+// ZPL del sticker: dos copias iguales lado a lado (izquierda x=10, derecha x=400).
+// Si cumplio = true (primer domingo del mes, cumpleaños el mes anterior), cada copia
+// dice "¡CUMPLIÓ!" en lugar de "Casa Kids" y lleva un pastel arriba a la derecha.
+function construirZplSticker(nombre, apellido, consecutivo, fechaImpresion, cumplio) {
     const n = zplTexto(nombre), a = zplTexto(apellido), c = zplTexto(consecutivo), f = zplTexto(fechaImpresion);
+    const titulo = cumplio ? zplTexto("¡CUMPLIÓ!") : "Casa Kids";
     return `
 ^XA
 ^CI28
 ^CF0,30
-^FO10,20^A0N,30,30^FD Casa Kids ^FS
+^FO10,20^A0N,30,30^FH\\^FD ${titulo} ^FS
 ^FO200,20^A0N,50,50^FH\\^FD ${c} ^FS
 ^FO10,70^A0N,50,50^FH\\^FD ${n} ^FS
 ^FO10,120^A0N,50,50^FH\\^FD ${a} ^FS
 ^FO10,180^A0N,30,30^FH\\^FD ${f} ^FS
+${cumplio ? zplPastel(0) : ""}
 
-^FO400,20^A0N,30,30^FD Casa Kids ^FS
+^FO400,20^A0N,30,30^FH\\^FD ${titulo} ^FS
 ^FO600,20^A0N,50,50^FH\\^FD ${c} ^FS
 ^FO400,70^A0N,50,50^FH\\^FD ${n} ^FS
 ^FO400,120^A0N,50,50^FH\\^FD ${a} ^FS
 ^FO400,180^A0N,30,30^FH\\^FD ${f} ^FS
+${cumplio ? zplPastel(394) : ""}
 ^XZ
 `;
 }
 
-function printTicket(nombre, apellido, consecutivo, codigo_qr) {
+// Primer domingo del mes: aviso destacado con pastel para el niño que cumplió el mes anterior
+function avisoCumpleanos(nombreCompleto, mes, edad) {
+    const texto = '<i class="mdi mdi-cake-variant" style="font-size:22px;vertical-align:middle"></i> ' +
+        '<b>' + escaparHtml(nombreCompleto) + '</b> cumplió ' +
+        (edad ? escaparHtml(edad) + ' años ' : '') + 'en ' + escaparHtml(mes) + '. ¡Felicítalo!';
+    toastr.success(texto, "¡Cumplió!", { escapeHtml: false, timeOut: 12000, extendedTimeOut: 4000, closeButton: true });
+    $("#asistencia_mensaje").html(texto);
+}
+
+function printTicket(nombre, apellido, consecutivo, codigo_qr, cumplio) {
     if (typeof qz === "undefined" || !qz.websocket.isActive()) return;
     const config = qz.configs.create("4BARCODE 4B-2054TF", { copies: 1 });
     const fechaImpresion = new Date().toLocaleString('es-CO', {
@@ -501,7 +538,7 @@ function printTicket(nombre, apellido, consecutivo, codigo_qr) {
         hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
 
-    const zplCommand = construirZplSticker(nombre, apellido, consecutivo, fechaImpresion);
+    const zplCommand = construirZplSticker(nombre, apellido, consecutivo, fechaImpresion, !!cumplio);
 
     qz.print(config, [{ type: 'raw', format: 'plain', data: zplCommand }])
         .then(() => console.log("Impreso con éxito"))

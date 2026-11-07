@@ -5,7 +5,7 @@ date_default_timezone_set('America/Bogota');
 header('Content-Type: application/json; charset=utf-8');
 
 include('../ajax/db_connect.php');
-require_once __DIR__ . '/../ajax/areas.php';
+require_once __DIR__ . '/../ajax/cumpleanos.php';
 
 // Obtener y sanitizar valores enviados por POST
 $id_nino = isset($_POST['id_nino']) ? intval($_POST['id_nino']) : 0;
@@ -54,7 +54,7 @@ for ($intento = 1; $intento <= $max_intentos; $intento++) {
         $stmtCheck->close();
 
         // 2. Obtener datos del niño
-        $sqlNino = "SELECT nombre, apellido, codigo_qr AS qr FROM test_ninos WHERE id_nino = ? AND activo = 1";
+        $sqlNino = "SELECT nombre, apellido, codigo_qr AS qr, fecha_nacimiento FROM test_ninos WHERE id_nino = ? AND activo = 1";
         $stmtNino = $conn->prepare($sqlNino);
         $stmtNino->bind_param("i", $id_nino);
         $stmtNino->execute();
@@ -67,6 +67,7 @@ for ($intento = 1; $intento <= $max_intentos; $intento++) {
         $nombre   = $rowNino['nombre'];
         $apellido = $rowNino['apellido'];
         $codigoqr = $rowNino['qr'];
+        $cumple   = info_cumpleanos($rowNino['fecha_nacimiento']);
         $stmtNino->close();
 
         // 3. Obtener y actualizar consecutivo para el área (bloqueo para que no se repita)
@@ -118,7 +119,10 @@ for ($intento = 1; $intento <= $max_intentos; $intento++) {
             'nombre_nino' => $nombre . ' ' . $apellido,
             'consecutivo' => $nuevoConsecutivo,
             'codigoQR' => $codigoqr,
-            'id_asistencia' => $id_asistencia
+            'id_asistencia' => $id_asistencia,
+            'cumplio' => $cumple['cumplio'],
+            'mes_cumple' => $cumple['mes'],
+            'edad_cumplida' => $cumple['edad']
         ]);
         break;
 

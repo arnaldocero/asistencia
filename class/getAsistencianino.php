@@ -10,6 +10,7 @@ header('Content-Type: application/json');
 
 // Incluir el archivo de conexión a la base de datos
 include('../ajax/db_connect.php'); // Asegúrate de que la ruta es correcta
+require_once __DIR__ . '/../ajax/cumpleanos.php';
 
 // Verificar la conexión
 if ($conn->connect_error) {
@@ -37,6 +38,7 @@ $stmt = $conn->prepare("
         n.nombre_padre, 
         a.hora_entrada, 
         n.codigo_qr,
+        n.fecha_nacimiento,
         a.consecutivo
     FROM 
         asistencia a 
@@ -73,6 +75,10 @@ if ($result === false) {
 // Verificar si hay resultados
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
+    // La reimpresión sale igual que el sticker original (con pastel si cumplió el mes anterior)
+    $cumple = info_cumpleanos($row['fecha_nacimiento']);
+    unset($row['fecha_nacimiento']);
+    $row['cumplio'] = $cumple['cumplio'];
     echo json_encode(['status' => 'success', 'data' => $row]);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'No se encontraron datos para los parámetros proporcionados']);
