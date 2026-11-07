@@ -523,7 +523,7 @@ include("class/verificar_sesion.php");
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/libs/toastr/build/toastr.min.js"></script>
-    <script src="dist/js/sesion.js"></script>
+    <script src="dist/js/sesion.js?v=<?php echo filemtime(__DIR__ . '/dist/js/sesion.js'); ?>"></script>
     <script src="dist/js/getcumpleanos.js?j=<?php echo time(); ?>"></script>
     
     

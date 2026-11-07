@@ -537,7 +537,7 @@ if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
     <script src="dist/js/sidebarmenu.js"></script>
     <script src="dist/js/custom.min.js"></script>
     <script src="assets/libs/toastr/build/toastr.min.js"></script>
-    <script src="dist/js/sesion.js"></script>
+    <script src="dist/js/sesion.js?v=<?php echo filemtime(__DIR__ . '/dist/js/sesion.js'); ?>"></script>
     <script src="dist/js/usuarios.js?j=<?php echo time(); ?>"></script>
   </body>
 </html>

@@ -79,7 +79,7 @@ if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
     <script src="assets/libs/jquery/dist/jquery.min.js"></script>
     <script src="assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/libs/toastr/build/toastr.min.js"></script>
-    <script src="dist/js/sesion.js"></script>
+    <script src="dist/js/sesion.js?v=<?php echo filemtime(__DIR__ . '/dist/js/sesion.js'); ?>"></script>
     <script>
       $(".preloader").fadeOut();
 
