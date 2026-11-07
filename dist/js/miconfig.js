@@ -14,6 +14,7 @@ $(document).ready(function() {
     const modalAsistencia = document.getElementById("asistenciaModal");
 
     openModalBtn.onclick = function() {
+        limpiarFormularioNino();
         modal.style.display = "block";
         document.getElementById("modalTitle").textContent = "Registro de Niño";
         document.getElementById("modalButton").textContent = "Registrar";
@@ -21,8 +22,19 @@ $(document).ready(function() {
     }
 
     closeModalBtn.onclick = function() {
-        modal.style.display = "none";
+        cerrarModal();
     }
+
+    // Mostrar u ocultar la lista de diagnósticos según el interruptor
+    $("#diagnostico").on("change", function() {
+        if ($(this).is(":checked")) {
+            $("#diagnosticosBox").slideDown();
+            cargarDiagnosticos();
+        } else {
+            $("#diagnosticosBox").slideUp();
+            $("#listaDiagnosticos").html("");
+        }
+    });
 
     $("#registroForm").on("submit", function(e) {
         e.preventDefault();
@@ -36,18 +48,16 @@ $(document).ready(function() {
             dataType: "json",
             success: function(response) {
                 if (response.status === 'success') {
-                    toastr.success("Se registró al niño correctamente.", "Sistema");
+                    toastr.success(response.message || "Se registró al niño correctamente.", "Sistema");
                     const origen = $("#origenModal").val();
                     const esNuevo = !$("#idNino").val();
                     if (origen === "index" && esNuevo && response.id_nino && response.id_area) {
                         registrarAsistenciaV2(response.id_nino, response.id_area);
                     }
 
-                    modal.style.display = "none";
-                    $("#registroForm")[0].reset();
-                    $("#idNino").val("");
+                    cerrarModal();
                     obtenerninos();
-                    $("#myModal").hide();
+                    obtenerninosAll();
                 } else if (response.status === 'error') {
                     toastr.warning(response.message);
                 }
@@ -82,6 +92,7 @@ $(document).ready(function() {
     obtenerareas();
     obtenerninos();
     obtenerninosAll();
+    actualizarAreasUnaVezAlDia();
 
     // 🚀 SINCRONIZACIÓN AUTOMÁTICA CELULAR -> COMPUTADOR CADA 4 SEGUNDOS
     // Los equipos sin impresora (celulares) pausan la consulta mientras la pestaña está oculta.
@@ -298,6 +309,100 @@ function obtenerninosAll() {
                 });
             }
             table.draw();
+        }
+    });
+}
+
+// Deja el formulario del niño vacío y listo para un registro nuevo
+function limpiarFormularioNino() {
+    $("#registroForm")[0].reset();
+    $("#idNino").val("");
+    $("#diagnosticosBox").hide();
+    $("#listaDiagnosticos").html("");
+}
+
+function cerrarModal() {
+    $("#myModal").hide();
+    limpiarFormularioNino();
+}
+
+// Carga los diagnósticos disponibles y marca los que ya tiene el niño
+function cargarDiagnosticos(diagnosticosMarcados = []) {
+    const marcados = diagnosticosMarcados.map(Number);
+    $.ajax({
+        url: "class/obtener_diagnosticos.php",
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            if (response.status !== "success") return;
+            let html = "";
+            response.data.forEach(function(diag) {
+                const id = parseInt(diag.id_diagnostico);
+                html += '<div class="form-check">' +
+                    '<input class="form-check-input" type="checkbox" name="diagnosticos[]" id="diag' + id + '" value="' + id + '"' + (marcados.includes(id) ? ' checked' : '') + '>' +
+                    '<label class="form-check-label" for="diag' + id + '">' + escaparHtml(diag.nombre) + '</label>' +
+                    '</div>';
+            });
+            $("#listaDiagnosticos").html(html);
+        }
+    });
+}
+
+// Abre el modal con los datos del niño para editarlos
+function editarNino(idNino) {
+    limpiarFormularioNino();
+    document.getElementById("modalTitle").textContent = "Editar Niño";
+    document.getElementById("modalButton").textContent = "Actualizar";
+
+    $.ajax({
+        type: "GET",
+        url: "class/getNino.php",
+        data: { id: idNino },
+        dataType: "json",
+        success: function(response) {
+            if (response.status !== "success") {
+                toastr.warning(response.message || "No se pudieron cargar los datos del niño");
+                return;
+            }
+            const nino = response.data;
+            $("#idNino").val(idNino);
+            $("#fname").val(nino.nombre);
+            $("#lname").val(nino.apellido);
+            // Una fecha 0000-00-00 se deja vacía para que la completen
+            $("#fechaNacimiento").val(nino.fecha_nacimiento && nino.fecha_nacimiento !== "0000-00-00" ? nino.fecha_nacimiento : "");
+            $("#padrename").val(nino.nombre_padre);
+            $("#padrephone").val(nino.telefono);
+
+            if (nino.tiene_diagnostico == "1") {
+                $("#diagnostico").prop("checked", true);
+                $("#diagnosticosBox").show();
+                cargarDiagnosticos(response.diagnosticos || []);
+            }
+
+            $("#myModal").show();
+        },
+        error: function(xhr) {
+            if (xhr.status !== 401 && xhr.status !== 403) {
+                toastr.warning("Error al cargar los datos del niño.");
+            }
+        }
+    });
+}
+
+// Recalcula el área de los niños según su edad, como mucho una vez al día por equipo
+function actualizarAreasUnaVezAlDia() {
+    const hoy = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD en hora local
+    let ultima = null;
+    try { ultima = localStorage.getItem("ultimaActualizacionAreas"); } catch (e) {}
+    if (ultima === hoy) return;
+
+    $.ajax({
+        url: "class/actualizar_areas_por_edad.php",
+        method: "GET",
+        dataType: "json",
+        success: function(response) {
+            console.log(response.message);
+            try { localStorage.setItem("ultimaActualizacionAreas", hoy); } catch (e) {}
         }
     });
 }

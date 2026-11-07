@@ -17,6 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         // Verifica la contraseña
         if (password_verify($contrasena, $row['contrasena'])) {
+            // Usuario desactivado desde la pantalla de usuarios
+            // (si la columna aún no existe, se considera activo)
+            if (isset($row['activo']) && (int)$row['activo'] === 0) {
+                echo 'error_inactivo';
+                exit();
+            }
+
             // Nuevo ID de sesión al autenticarse (evita fijación de sesión) y nuevo token CSRF
             session_regenerate_id(true);
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

@@ -367,7 +367,7 @@ include("class/verificar_sesion.php");
                     ><i class="ti-settings me-1 ms-1"></i> Account Setting</a
                   >
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="javascript:void(0)"
+                  <a id="logout-btn" class="dropdown-item" href="javascript:void(0)"
                     ><i class="fa fa-power-off me-1 ms-1"></i> Logout</a
                   >
                   <div class="dropdown-divider"></div>

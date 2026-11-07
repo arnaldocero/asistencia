@@ -1,131 +1,85 @@
+// Color fijo por área (mismo color en todas las gráficas)
+const COLORES_AREA = {
+    1: "rgba(54, 162, 235, 0.8)",
+    2: "rgba(255, 159, 64, 0.8)",
+    3: "rgba(75, 192, 192, 0.8)",
+    4: "rgba(153, 102, 255, 0.8)"
+};
+
 $(document).ready(function() {
     getgraficaasitenciames();
-    getgraficaasitenciamesarea(1);
-    getgraficaasitenciamesarea(2);
+    for (let area = 1; area <= 4; area++) {
+        getgraficaasitenciamesarea(area);
+    }
 });
 
-function getgraficaasitenciames(){
+// Barras: asistencia por mes, una serie por área
+function getgraficaasitenciames() {
     $.ajax({
         url: "class/getAsistenciaPorMes.php",
         type: "GET",
         dataType: "json",
-        success: function (data) {
-            let labels = [];
-            let datasets = {};
+        success: function(data) {
+            const meses = [...new Set(data.map(item => item.mes))].sort();
+            const series = {};
 
-            data.forEach((item) => {
-                let mes = item.mes;
-                let area = item.nombre_area;
-                let total = parseInt(item.total_ninos);
-
-                if (!labels.includes(mes)) {
-                    labels.push(mes);
-                }
-
-                if (!datasets[area]) {
-                    datasets[area] = {
-                        label: area,
-                        data: [],
-                        backgroundColor: getRandomColor()
+            data.forEach(function(item) {
+                const id = parseInt(item.id_area);
+                if (!series[id]) {
+                    series[id] = {
+                        label: item.nombre_area,
+                        data: meses.map(() => 0), // un valor por mes, aunque el área no tenga datos ese mes
+                        backgroundColor: COLORES_AREA[id] || "rgba(150, 150, 150, 0.8)"
                     };
                 }
-
-                datasets[area].data.push(total);
+                series[id].data[meses.indexOf(item.mes)] = parseInt(item.total_ninos);
             });
 
-            let datasetsArray = Object.values(datasets);
-
-            let ctx = document.getElementById("asistenciaChart").getContext("2d");
-            new Chart(ctx, {
+            new Chart(document.getElementById("asistenciaChart").getContext("2d"), {
                 type: "bar",
-                data: {
-                    labels: labels,
-                    datasets: datasetsArray
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+                data: { labels: meses, datasets: Object.keys(series).sort().map(id => series[id]) },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
             });
         },
-        error: function (xhr, status, error) {
+        error: function(xhr, status, error) {
             console.error("Error al obtener los datos:", error);
         }
     });
-
-    
-    
 }
+
+// Línea: asistencia por mes de un área
 function getgraficaasitenciamesarea(area) {
     $.ajax({
         url: "class/getAsistenciaporMesyArea.php",
         type: "GET",
-        data: { id_area: area }, // 🔹 Pasamos el área como parámetro
+        data: { id_area: area },
         dataType: "json",
-        success: function (data) {
-            let labels = [];
-            let datasets = {};
+        success: function(data) {
+            const canvas = document.getElementById("asistenciaChartArea" + area);
+            if (!canvas) return;
 
-            data.forEach((item) => {
-                let mes = item.mes;
-                let area = item.nombre_area;
-                let total = parseInt(item.total_ninos);
-
-                if (!labels.includes(mes)) {
-                    labels.push(mes);
-                }
-
-                if (!datasets[area]) {
-                    datasets[area] = {
-                        label: area,
-                        data: [],
-                        borderColor: getRandomColor(), // 🔹 Color de la línea
-                        backgroundColor: "transparent", // 🔹 Sin relleno
-                        borderWidth: 2,
-                        tension: 0.4 // 🔹 Suaviza la línea
-                    };
-                }
-
-                datasets[area].data.push(total);
-            });
-
-            let datasetsArray = Object.values(datasets);
-
-            let ctx;
-            if (area == 1) {
-                ctx = document.getElementById("asistenciaChartarea").getContext("2d");
-            } else if (area == 2) {
-                ctx = document.getElementById("asistenciaChartareacinco").getContext("2d");
-            } else {
-                ctx = document.getElementById("asistenciaChartarea").getContext("2d");
+            if (data.length > 0) {
+                $("#tituloArea" + area).text("Asistencia mensual - " + data[0].nombre_area);
             }
-            
-            new Chart(ctx, {
-                type: "line", // 🔹 Cambiamos de bar a line
+
+            new Chart(canvas.getContext("2d"), {
+                type: "line",
                 data: {
-                    labels: labels,
-                    datasets: datasetsArray
+                    labels: data.map(item => item.mes),
+                    datasets: [{
+                        label: data.length > 0 ? data[0].nombre_area : "Área " + area,
+                        data: data.map(item => parseInt(item.total_ninos)),
+                        borderColor: COLORES_AREA[area],
+                        backgroundColor: "transparent",
+                        borderWidth: 2,
+                        tension: 0.4
+                    }]
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
             });
         },
-        error: function (xhr, status, error) {
+        error: function(xhr, status, error) {
             console.error("Error al obtener los datos:", error);
         }
     });
-}
-
-function getRandomColor() {
-    return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.7)`;
 }

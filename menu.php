@@ -123,10 +123,10 @@
               <li class="sidebar-item">
                 <a
                   class="sidebar-link waves-effect waves-dark sidebar-link"
-                  href="authentication-register.php"
+                  href="usuarios.php"
                   aria-expanded="false"
-                  ><i class="mdi mdi-account-plus"></i
-                  ><span class="hide-menu">Registrar usuario</span></a
+                  ><i class="mdi mdi-account-multiple"></i
+                  ><span class="hide-menu">Usuarios</span></a
                 >
               </li>
               <?php } ?>

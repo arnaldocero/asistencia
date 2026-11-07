@@ -5,6 +5,7 @@ date_default_timezone_set('America/Bogota');
 header('Content-Type: application/json; charset=utf-8');
 
 include('../ajax/db_connect.php');
+require_once __DIR__ . '/../ajax/areas.php';
 
 // Obtener y sanitizar valores enviados por POST
 $id_nino = isset($_POST['id_nino']) ? intval($_POST['id_nino']) : 0;
@@ -69,17 +70,26 @@ for ($intento = 1; $intento <= $max_intentos; $intento++) {
         $stmtNino->close();
 
         // 3. Obtener y actualizar consecutivo para el área (bloqueo para que no se repita)
-        $sqlConsecutivo = "SELECT consecutivo FROM consecutivo WHERE id_area = ? ORDER BY fecha_consecutivo DESC LIMIT 1 FOR UPDATE";
+        $sqlConsecutivo = "SELECT consecutivo, fecha_consecutivo FROM consecutivo WHERE id_area = ? ORDER BY fecha_consecutivo DESC LIMIT 1 FOR UPDATE";
         $stmtConsecutivo = $conn->prepare($sqlConsecutivo);
         $stmtConsecutivo->bind_param("i", $id_area);
         $stmtConsecutivo->execute();
         $resConsecutivo = $stmtConsecutivo->get_result();
         $rowConsecutivo = $resConsecutivo->fetch_assoc();
-        $consecutivo = $rowConsecutivo ? intval($rowConsecutivo['consecutivo']) : 0;
         $stmtConsecutivo->close();
 
-        $nuevoConsecutivo = $consecutivo + 1;
         $fechaHoy = date('Y-m-d');
+
+        // Reinicio diario: el primer registro del día en cada área vuelve a empezar
+        // desde su número base (301, 501, 701, 901). Así no depende de que alguien
+        // abra una pantalla ni de un cron.
+        if (!$rowConsecutivo || $rowConsecutivo['fecha_consecutivo'] !== $fechaHoy) {
+            $consecutivo = consecutivo_inicial($id_area);
+        } else {
+            $consecutivo = intval($rowConsecutivo['consecutivo']);
+        }
+
+        $nuevoConsecutivo = $consecutivo + 1;
 
         $sqlUpdateConsecutivo = "UPDATE consecutivo SET consecutivo = ?, fecha_consecutivo = ? WHERE id_area = ?";
         $stmtUpdate = $conn->prepare($sqlUpdateConsecutivo);

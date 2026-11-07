@@ -65,7 +65,7 @@ if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
               <div class="row border-top border-secondary">
                 <div class="col-12">
                   <div class="pt-3 d-flex gap-2">
-                    <a href="index.php" class="btn btn-lg btn-secondary flex-fill">Volver</a>
+                    <a href="usuarios.php" class="btn btn-lg btn-secondary flex-fill">Volver</a>
                     <button id="btnRegistrarUsuario" class="btn btn-lg btn-info flex-fill" type="submit">Registrar</button>
                   </div>
                 </div>

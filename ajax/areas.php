@@ -33,6 +33,14 @@ function obtener_area_por_edad($conn, $edad)
     return $row ? (int)$row['id_area'] : null;
 }
 
+// Número desde el que arranca cada día el consecutivo de un área
+// (el primer sticker del día es este número + 1: 301, 501, 701, 901).
+function consecutivo_inicial($id_area)
+{
+    $bases = [1 => 300, 2 => 500, 3 => 700, 4 => 900];
+    return $bases[(int)$id_area] ?? 0;
+}
+
 // Edad mínima aceptada (para los mensajes de error).
 function edad_minima_areas($conn)
 {

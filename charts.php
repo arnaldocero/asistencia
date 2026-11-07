@@ -367,7 +367,7 @@ include("class/verificar_sesion.php");
                     ><i class="ti-settings me-1 ms-1"></i> Account Setting</a
                   >
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="javascript:void(0)"
+                  <a id="logout-btn" class="dropdown-item" href="javascript:void(0)"
                     ><i class="fa fa-power-off me-1 ms-1"></i> Logout</a
                   >
                   <div class="dropdown-divider"></div>
@@ -445,34 +445,21 @@ include("class/verificar_sesion.php");
 </div>
           </div>
            <!-- End My Chart -->
-           <!-- My Chart -->
+           <!-- Una gráfica por área; el título lo pone graficas.js con el nombre de tbl_areas -->
           <div class="row">
-          <div class="col-md-12">
-    <div class="card">
-        <div class="card-header">
-            <h4>Asistencia Mensual por Área 3 a 4 años</h4>
-        </div>
-        <div class="card-body">
-            <canvas id="asistenciaChartarea"></canvas>
-        </div>
-    </div>
-</div>
+<?php for ($area = 1; $area <= 4; $area++) { ?>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h4 id="tituloArea<?php echo $area; ?>">Asistencia mensual - Área <?php echo $area; ?></h4>
+                </div>
+                <div class="card-body">
+                  <canvas id="asistenciaChartArea<?php echo $area; ?>"></canvas>
+                </div>
+              </div>
+            </div>
+<?php } ?>
           </div>
-           <!-- End My Chart -->
-           <!-- My Chart -->
-          <div class="row">
-          <div class="col-md-12">
-    <div class="card">
-        <div class="card-header">
-            <h4>Asistencia Mensual por Área 5 a 6 años</h4>
-        </div>
-        <div class="card-body">
-            <canvas id="asistenciaChartareacinco"></canvas>
-        </div>
-    </div>
-</div>
-          </div>
-           <!-- End My Chart -->
          
           
           <!-- End Charts -->

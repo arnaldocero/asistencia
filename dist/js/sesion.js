@@ -28,6 +28,17 @@
             alert(mensaje || 'No tienes permiso para realizar esta acción.');
         }
     });
+
+    // Botón "Logout" del menú superior (todas las páginas)
+    $(document).on('click', '#logout-btn', function () {
+        $.ajax({
+            url: 'class/logout.php',
+            method: 'POST',
+            complete: function () {
+                window.location.href = 'authentication-login.php';
+            }
+        });
+    });
 })(jQuery);
 
 // Escapa texto antes de insertarlo como HTML (tablas, mensajes) para evitar XSS:

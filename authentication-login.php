@@ -234,6 +234,8 @@
                             $('#resultado').text('Contraseña incorrecta.');
                         } else if(response == 'error_usuario') {
                             $('#resultado').text('Usuario no encontrado.');
+                        } else if(response == 'error_inactivo') {
+                            $('#resultado').text('Este usuario está desactivado. Consulta con un administrador.');
                         } else {
                             $('#resultado').text('Error en el login.');
                         }

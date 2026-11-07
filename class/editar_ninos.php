@@ -55,6 +55,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         );
 
         if ($stmt->execute()) {
+            // Reemplazar los diagnósticos del niño por los marcados en el formulario
+            $id_nino_int = (int)$id_nino;
+            $stmtDel = $conn->prepare("DELETE FROM nino_diagnostico WHERE id_nino = ?");
+            $stmtDel->bind_param("i", $id_nino_int);
+            $stmtDel->execute();
+            $stmtDel->close();
+
+            if ($tiene_diagnostico && !empty($_POST['diagnosticos']) && is_array($_POST['diagnosticos'])) {
+                $stmtDiag = $conn->prepare("INSERT INTO nino_diagnostico (id_nino, id_diagnostico) VALUES (?, ?)");
+                foreach ($_POST['diagnosticos'] as $id_diagnostico) {
+                    $id_diag_int = (int)$id_diagnostico;
+                    $stmtDiag->bind_param("ii", $id_nino_int, $id_diag_int);
+                    $stmtDiag->execute();
+                }
+                $stmtDiag->close();
+            }
+
             echo json_encode(['status' => 'success', 'message' => 'Niño actualizado exitosamente']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Error al actualizar el niño.' . registrar_error_bd($stmt->error)]);

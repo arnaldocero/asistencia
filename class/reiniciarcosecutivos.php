@@ -1,13 +1,11 @@
 <?php
 require_once __DIR__ . '/verificar_sesion_api.php'; // Solo usuarios con sesión iniciada
 include('../ajax/db_connect.php');
+require_once __DIR__ . '/../ajax/areas.php';
 
-$valores = [
-    1 => 300,
-    2 => 500,
-    3 => 700,
-    4 => 900
-];
+// Ya no es necesario llamarlo: registrar_asistenciaV2.php reinicia solo el consecutivo
+// en el primer registro de cada día. Se conserva para reinicios manuales.
+$valores = [1 => consecutivo_inicial(1), 2 => consecutivo_inicial(2), 3 => consecutivo_inicial(3), 4 => consecutivo_inicial(4)];
 
 // Verifica si llegaron IDs
 if (!isset($_POST['ids'])) {
