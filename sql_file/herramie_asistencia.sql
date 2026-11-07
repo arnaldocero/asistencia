@@ -115,10 +115,10 @@ CREATE TABLE `usuarios` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 -- Datos de catálogo
-INSERT INTO `tbl_areas` VALUES (1,'Área de 2 a 4 años','Área destinada para niños de 2 a 4 años',2,4);
+INSERT INTO `tbl_areas` VALUES (1,'Área de 3 a 4 años','Área destinada para niños de 3 a 4 años',2,4);
 INSERT INTO `tbl_areas` VALUES (2,'Área de 5 a 6 años','Área destinada para niños de 5 a 6 años',5,6);
 INSERT INTO `tbl_areas` VALUES (3,'Área de 7 a 8 años','Área destinada para niños de 7 a 8 años',7,8);
-INSERT INTO `tbl_areas` VALUES (4,'Área de 9 años en adelante','Área destinada para niños de 9 años en adelante',9,NULL);
+INSERT INTO `tbl_areas` VALUES (4,'Área de 9 a 11 años','Área destinada para niños de 9 a 11 años',9,NULL);
 INSERT INTO `consecutivo` VALUES (1,1,300,'2026-10-19');
 INSERT INTO `consecutivo` VALUES (2,2,500,'2026-10-19');
 INSERT INTO `consecutivo` VALUES (3,3,700,'2026-10-19');
