@@ -454,6 +454,45 @@ function printTicketAgain(idNino, idAsistencia) {
     });
 }
 
+// Texto seguro para un campo ZPL: las letras que no son ASCII (Ñ, Á, É...) y los
+// caracteres especiales de ZPL (^ ~ \) se envían como bytes UTF-8 en hexadecimal
+// (\C3\91 = Ñ) y el campo lleva ^FH\ para que la impresora los reconstruya.
+// Así la Ñ sale bien sin depender de la codificación que use QZ Tray o Windows.
+function zplTexto(texto) {
+    const bytes = new TextEncoder().encode(String(texto == null ? "" : texto));
+    let salida = "";
+    bytes.forEach(function(b) {
+        if (b >= 0x20 && b < 0x7F && b !== 0x5E && b !== 0x7E && b !== 0x5C) {
+            salida += String.fromCharCode(b);
+        } else {
+            salida += "\\" + b.toString(16).toUpperCase().padStart(2, "0");
+        }
+    });
+    return salida;
+}
+
+// ZPL del sticker: dos copias iguales lado a lado (izquierda x=10, derecha x=400)
+function construirZplSticker(nombre, apellido, consecutivo, fechaImpresion) {
+    const n = zplTexto(nombre), a = zplTexto(apellido), c = zplTexto(consecutivo), f = zplTexto(fechaImpresion);
+    return `
+^XA
+^CI28
+^CF0,30
+^FO10,20^A0N,30,30^FD Casa Kids ^FS
+^FO200,20^A0N,50,50^FH\\^FD ${c} ^FS
+^FO10,70^A0N,50,50^FH\\^FD ${n} ^FS
+^FO10,120^A0N,50,50^FH\\^FD ${a} ^FS
+^FO10,180^A0N,30,30^FH\\^FD ${f} ^FS
+
+^FO400,20^A0N,30,30^FD Casa Kids ^FS
+^FO600,20^A0N,50,50^FH\\^FD ${c} ^FS
+^FO400,70^A0N,50,50^FH\\^FD ${n} ^FS
+^FO400,120^A0N,50,50^FH\\^FD ${a} ^FS
+^FO400,180^A0N,30,30^FH\\^FD ${f} ^FS
+^XZ
+`;
+}
+
 function printTicket(nombre, apellido, consecutivo, codigo_qr) {
     if (typeof qz === "undefined" || !qz.websocket.isActive()) return;
     const config = qz.configs.create("4BARCODE 4B-2054TF", { copies: 1 });
@@ -462,23 +501,7 @@ function printTicket(nombre, apellido, consecutivo, codigo_qr) {
         hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
 
-    const zplCommand = `
-^XA
-^CI28
-^CF0,30
-^FO10,20^A0N,30,30^FD Casa Kids ^FS
-^FO200,20^A0N,50,50^FD ${consecutivo} ^FS
-^FO10,70^A0N,50,50^FD ${nombre} ^FS
-^FO10,120^A0N,50,50^FD ${apellido} ^FS
-^FO10,180^A0N,30,30^FD ${fechaImpresion} ^FS
-
-^FO400,20^A0N,30,30^FD Casa Kids ^FS
-^FO600,20^A0N,50,50^FD ${consecutivo} ^FS
-^FO400,70^A0N,50,50^FD ${nombre} ^FS
-^FO400,120^A0N,50,50^FD ${apellido} ^FS
-^FO400,180^A0N,30,30^FD ${fechaImpresion} ^FS
-^XZ
-`;
+    const zplCommand = construirZplSticker(nombre, apellido, consecutivo, fechaImpresion);
 
     qz.print(config, [{ type: 'raw', format: 'plain', data: zplCommand }])
         .then(() => console.log("Impreso con éxito"))
