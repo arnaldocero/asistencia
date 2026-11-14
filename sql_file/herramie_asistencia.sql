@@ -2,9 +2,9 @@
 -- Casa Kids - Sistema de Asistencia: estructura de la base de datos
 -- Generado el 2026-11-05 desde la copia local (MariaDB 10.4).
 --
--- Contiene: estructura de las 7 tablas en uso + datos de catálogo
+-- Contiene: estructura de las 8 tablas en uso + datos de catálogo
 -- (tbl_areas, consecutivo, diagnosticos_neurodivergencia).
--- NO contiene datos personales (niños, asistencias, usuarios).
+-- NO contiene datos personales (niños, asistencias, usuarios, PQR).
 --
 -- Uso: crear una base vacía e importar este archivo (phpMyAdmin > Importar).
 -- Después crear el primer administrador (ver el final del archivo).
@@ -111,6 +111,32 @@ CREATE TABLE `usuarios` (
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pqr` (
+  `id_pqr` int(11) NOT NULL AUTO_INCREMENT,
+  `tipo` enum('peticion','queja','reclamo','sugerencia') NOT NULL,
+  `nombre_solicitante` varchar(150) NOT NULL,
+  `telefono` varchar(30) DEFAULT NULL,
+  `id_nino` int(11) DEFAULT NULL,
+  `descripcion` text NOT NULL,
+  `estado` enum('pendiente','en_proceso','resuelta') NOT NULL DEFAULT 'pendiente',
+  `respuesta` text DEFAULT NULL,
+  `id_usuario_registro` int(11) NOT NULL,
+  `fecha_registro` datetime NOT NULL,
+  `id_usuario_actualiza` int(11) DEFAULT NULL,
+  `fecha_actualizacion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_pqr`),
+  KEY `idx_pqr_estado` (`estado`),
+  KEY `idx_pqr_usuario` (`id_usuario_registro`),
+  KEY `fk_pqr_nino` (`id_nino`),
+  KEY `fk_pqr_usuario_actualiza` (`id_usuario_actualiza`),
+  CONSTRAINT `fk_pqr_nino` FOREIGN KEY (`id_nino`) REFERENCES `test_ninos` (`id_nino`),
+  CONSTRAINT `fk_pqr_usuario_actualiza` FOREIGN KEY (`id_usuario_actualiza`) REFERENCES `usuarios` (`id_usuario`),
+  CONSTRAINT `fk_pqr_usuario_registro` FOREIGN KEY (`id_usuario_registro`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

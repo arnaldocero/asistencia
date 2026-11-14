@@ -10,27 +10,6 @@
 
             <ul id="sidebarnav" class="pt-4">
 
-            <?php if ($_SESSION['usuario_rol'] != 'admin') { ?>
-
-              <li class="sidebar-item">
-
-                <a
-
-                  class="sidebar-link waves-effect waves-dark sidebar-link"
-
-                  href="index.html"
-
-                  aria-expanded="false"
-
-                  ><i class="mdi mdi-view-dashboard"></i
-
-                  ><span class="hide-menu">Dashboard</span></a
-
-                >
-
-              </li>
-
-              <?php } ?>
               <li class="sidebar-item">
 
 <a
@@ -117,6 +96,16 @@
 
                 >
 
+              </li>
+
+              <li class="sidebar-item">
+                <a
+                  class="sidebar-link waves-effect waves-dark sidebar-link"
+                  href="pqr.php"
+                  aria-expanded="false"
+                  ><i class="mdi mdi-comment-alert-outline"></i
+                  ><span class="hide-menu">PQR</span></a
+                >
               </li>
 
               <?php if (($_SESSION['usuario_rol'] ?? '') === 'admin') { ?>

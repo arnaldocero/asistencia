@@ -10,6 +10,7 @@ Aplicación web para registrar la asistencia diaria de los niños de Casa Kids. 
 - **Sticker** en impresora térmica (ZPL) a través de QZ Tray.
 - **Sincronización celular → PC**: el PC con impresora consulta cada 4 s e imprime los registros hechos desde celulares.
 - **Reportes** por mes, área y turno, y un **calendario de cumpleaños**.
+- **PQR**: peticiones, quejas, reclamos y sugerencias. Recepción las registra y ve las suyas; el administrador ve todas, cambia el estado (pendiente, en proceso, resuelta) y responde.
 - **Administración** (solo rol `admin`): eliminar niños (borrado lógico) y gestionar usuarios: crear, cambiar rol o contraseña y desactivar.
 - **Consecutivos**: se reinician solos cada día; el primer sticker de cada área es 301, 501, 701 o 901.
 
@@ -36,7 +37,7 @@ dist/js/miconfig.js     Lógica de check-in, tablas, sincronización e impresió
 dist/js/sesion.js       CSRF, redirección al login con 401 y escaparHtml()
 dist/img/codigosqr/     QR generados (no se suben a git)
 sql_file/               Estructura de la BD y migraciones
-*.php (raíz)            Páginas: index, listaninos, reportes, charts, cumpleanos, usuarios, login, registro
+*.php (raíz)            Páginas: index, listaninos, reportes, charts, cumpleanos, pqr, usuarios, login, registro
 ```
 
 ## Instalación local (XAMPP)
