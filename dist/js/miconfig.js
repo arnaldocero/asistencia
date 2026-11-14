@@ -293,31 +293,60 @@ function obtenerninos() {
     });
 }
 
+// Lista completa de niños (pantalla "Lista de niños"). Con soloFechasInvalidas = true
+// muestra solo los niños cuya fecha de nacimiento hay que corregir, con el motivo.
+var todosLosNinos = [];
+var soloFechasInvalidas = false;
+
 function obtenerninosAll() {
     $.ajax({
         type: "GET",
         url: "class/obtenertodosninos.php",
         dataType: "json",
         success: function(response) {
-            let table = $('#zero_configAll').DataTable();
-            table.clear();
-
-            if (response.status === 'success' && response.data) {
-                response.data.forEach(function(nino) {
-                    table.row.add([
-                        nino.id_nino,
-                        escaparHtml(nino.nombre),
-                        escaparHtml(nino.apellido),
-                        escaparHtml(nino.nombre_padre),
-                        '<button class="btn btn-sm btn-primary" onclick="editarNino(' + nino.id_nino + ')">Editar</button> ' +
-                        '<button class="btn btn-sm btn-danger" onclick="eliminarNino(' + nino.id_nino + ')">Eliminar</button>'
-                    ]);
-                });
-            }
-            table.draw();
+            todosLosNinos = (response.status === 'success' && response.data) ? response.data : [];
+            dibujarListaNinos();
         }
     });
 }
+
+function dibujarListaNinos() {
+    if (!$('#zero_configAll').length) return;
+    const table = $('#zero_configAll').DataTable();
+    table.clear();
+
+    const porCorregir = todosLosNinos.filter(n => n.fecha_invalida);
+    if (porCorregir.length === 0) soloFechasInvalidas = false;
+
+    // Aviso con la cantidad y el botón para filtrar
+    $("#avisoFechas").toggleClass("d-none", porCorregir.length === 0);
+    $("#avisoFechasTexto").text(soloFechasInvalidas
+        ? "Mostrando los " + porCorregir.length + " niños con fecha de nacimiento por corregir. Usa Editar para corregirla."
+        : porCorregir.length + " niños tienen la fecha de nacimiento por corregir (sin fecha, imposible o sin área por edad).");
+    $("#btnFiltroFechas").text(soloFechasInvalidas ? "Ver todos los niños" : "Ver solo esos niños");
+
+    (soloFechasInvalidas ? porCorregir : todosLosNinos).forEach(function(nino) {
+        // En modo corrección, bajo el nombre se ve el motivo y bajo el acudiente su teléfono
+        const nombre = escaparHtml(nino.nombre) + (soloFechasInvalidas
+            ? '<br><small class="text-danger">' + escaparHtml(nino.fecha_invalida) + '</small>' : '');
+        const acudiente = escaparHtml(nino.nombre_padre) + (soloFechasInvalidas && nino.telefono
+            ? '<br><small class="text-muted">Tel. ' + escaparHtml(nino.telefono) + '</small>' : '');
+        table.row.add([
+            nino.id_nino,
+            nombre,
+            escaparHtml(nino.apellido),
+            acudiente,
+            '<button class="btn btn-sm btn-primary" onclick="editarNino(' + nino.id_nino + ')">Editar</button> ' +
+            '<button class="btn btn-sm btn-danger" onclick="eliminarNino(' + nino.id_nino + ')">Eliminar</button>'
+        ]);
+    });
+    table.draw();
+}
+
+$(document).on("click", "#btnFiltroFechas", function() {
+    soloFechasInvalidas = !soloFechasInvalidas;
+    dibujarListaNinos();
+});
 
 // Deja el formulario del niño vacío y listo para un registro nuevo
 function limpiarFormularioNino() {

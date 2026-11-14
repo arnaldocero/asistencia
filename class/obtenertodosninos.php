@@ -10,6 +10,7 @@ header('Content-Type: application/json');
 
 // Incluir el archivo de conexión a la base de datos
 include('../ajax/db_connect.php'); // Asegúrate de que la ruta es correcta
+require_once __DIR__ . '/../ajax/areas.php';
 
 // Verificar la conexión
 if ($conn->connect_error) {
@@ -18,7 +19,9 @@ if ($conn->connect_error) {
 }
 
 // Preparar la consulta SQL utilizando sentencias preparadas
-$stmt = $conn->prepare("SELECT n.id_nino, n.nombre, n.apellido, n.nombre_padre FROM test_ninos n WHERE n.activo = 1 ORDER BY n.nombre;");
+$stmt = $conn->prepare("SELECT n.id_nino, n.nombre, n.apellido, n.nombre_padre, n.telefono,
+                               CAST(n.fecha_nacimiento AS CHAR) AS fecha_nacimiento
+                        FROM test_ninos n WHERE n.activo = 1 ORDER BY n.nombre;");
 
 if (!$stmt) {
     echo json_encode(['status' => 'error', 'message' => 'Error al preparar la consulta.' . registrar_error_bd($conn->error)]);
@@ -40,7 +43,10 @@ $datos = array();
 
 // Verificar si hay resultados
 if ($result->num_rows > 0) {
+    // Fecha de nacimiento por corregir (sin fecha, imposible, sin área por edad...)
+    $edad_minima = edad_minima_areas($conn);
     while ($row = $result->fetch_assoc()) {
+        $row['fecha_invalida'] = motivo_fecha_invalida($row['fecha_nacimiento'], $edad_minima);
         $datos[] = $row;
     }
     echo json_encode(['status' => 'success', 'data' => $datos]);

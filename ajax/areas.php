@@ -41,6 +41,26 @@ function consecutivo_inicial($id_area)
     return $bases[(int)$id_area] ?? 0;
 }
 
+// Motivo por el que una fecha de nacimiento hay que corregirla, o null si está bien.
+// $edad_minima = edad_minima_areas($conn), calculada una sola vez para toda la lista.
+function motivo_fecha_invalida($fecha_nacimiento, $edad_minima)
+{
+    if ($fecha_nacimiento === null || $fecha_nacimiento === '' || $fecha_nacimiento === '0000-00-00') {
+        return 'Sin fecha de nacimiento';
+    }
+    $edad = calcular_edad($fecha_nacimiento);
+    if ($edad === null) {
+        return 'Fecha imposible (' . $fecha_nacimiento . ')';
+    }
+    if ($edad < $edad_minima) {
+        return 'Menor de ' . $edad_minima . ' años: no tiene área';
+    }
+    if ($edad > 17) {
+        return 'Tiene ' . $edad . ' años: revisar (¿fecha del acudiente?)';
+    }
+    return null;
+}
+
 // Edad mínima aceptada (para los mensajes de error).
 function edad_minima_areas($conn)
 {

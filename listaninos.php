@@ -579,6 +579,12 @@ include("class/verificar_sesion.php");
             <div class="card">
                 <div class="card-body">
                   <h5 class="card-title">Asistencia de niños casa kids</h5>
+                  <!-- Aviso de fechas de nacimiento por corregir (lo llena miconfig.js) -->
+                  <div id="avisoFechas" class="alert alert-warning d-none d-flex flex-wrap align-items-center gap-2">
+                    <i class="mdi mdi-calendar-question" style="font-size:20px"></i>
+                    <span id="avisoFechasTexto"></span>
+                    <button type="button" class="btn btn-sm btn-warning ms-auto" id="btnFiltroFechas">Ver solo esos niños</button>
+                  </div>
                   <input type="hidden" id="origenModal" name="origenModal" value="">
                   <div class="table-responsive">
                     <table
