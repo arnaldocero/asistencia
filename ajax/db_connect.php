@@ -1,4 +1,10 @@
 <?php
+// Se puede incluir más de una vez (la verificación de sesión ya la incluye antes que
+// cada endpoint): si la conexión ya existe, no se vuelve a abrir.
+if (isset($conn) && $conn instanceof mysqli) {
+    return;
+}
+
 // Nunca mostrar errores de PHP al navegador; quedan en el log del servidor
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
@@ -6,10 +12,12 @@ ini_set('log_errors', 1);
 
 // Guarda en el log el detalle técnico de un error de MySQL y devuelve '' para que
 // ese detalle (tablas, columnas, consultas) no llegue al usuario.
-function registrar_error_bd($detalle)
-{
-    error_log(basename($_SERVER['SCRIPT_NAME'] ?? 'cli') . ': ' . $detalle);
-    return '';
+if (!function_exists('registrar_error_bd')) {
+    function registrar_error_bd($detalle)
+    {
+        error_log(basename($_SERVER['SCRIPT_NAME'] ?? 'cli') . ': ' . $detalle);
+        return '';
+    }
 }
 
 // Las credenciales se leen de config/config.local.php (excluido de git).

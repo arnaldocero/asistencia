@@ -525,8 +525,8 @@ include("class/verificar_sesion.php");
     <script src="assets/libs/flot.tooltip/js/jquery.flot.tooltip.min.js"></script>
     <script src="assets/libs/chart/turning-series.js"></script>
     <script src="dist/js/pages/chart/chart-page-init.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Versión fija: una versión nueva de Chart.js no puede romper las gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
     <script src="dist/js/sesion.js?v=<?php echo filemtime(__DIR__ . '/dist/js/sesion.js'); ?>"></script>
     <script src="dist/js/graficas.js?j=<?php echo time(); ?>"></script>
     

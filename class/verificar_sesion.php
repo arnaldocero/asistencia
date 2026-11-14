@@ -31,6 +31,22 @@ if (isset($_SESSION['ultimo_acceso'])) {
 // Actualizar tiempo del último acceso
 $_SESSION['ultimo_acceso'] = time();
 
+// El usuario debe seguir existiendo y activo; su rol se toma de la base de datos
+// (si un admin lo desactivó o le cambió el rol, aplica en la siguiente página que abra).
+require_once __DIR__ . '/../ajax/db_connect.php';
+require_once __DIR__ . '/../ajax/usuario_sesion.php';
+$estado_usuario = estado_usuario_actual($conn, $_SESSION['usuario_id']);
+if (!$estado_usuario || !$estado_usuario['activo']) {
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('Tu usuario fue desactivado. Consulta con un administrador.');
+        window.location.href = 'authentication-login.php';
+    </script>";
+    exit();
+}
+$_SESSION['usuario_rol'] = $estado_usuario['rol'];
+
 // Token CSRF: uno por sesión. Se entrega en una cookie que lee dist/js/sesion.js
 // y lo reenvía en la cabecera X-CSRF-Token de cada POST (ver verificar_sesion_api.php).
 if (empty($_SESSION['csrf_token'])) {
